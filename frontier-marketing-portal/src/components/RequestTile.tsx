@@ -1,0 +1,2 @@
+import type {RequestType} from '../types'; import {useNavigate} from 'react-router-dom';
+export default function RequestTile({item}:{item:RequestType}){const nav=useNavigate();const go=()=>item.external?window.open(item.url,'_blank','noopener,noreferrer'):nav(`/request/${item.slug}`);return <button className="tile" onClick={go}><span className="tileIcon">{item.icon}</span><h3>{item.title}</h3><p>{item.description}</p><span className="tileAction">{item.external?'Visit store ↗':'Start request →'}</span></button>}

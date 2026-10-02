@@ -1,0 +1,2 @@
+import RequestTile from '../components/RequestTile'; import {requestTypes} from '../data/requestTypes';
+export default function Home(){return <div className="page"><section className="hero"><p className="eyebrow">Frontier Marketing</p><h1>How can we help?</h1><p>Select a request type below. You will receive a request number and a copy for your records after submission.</p></section><section className="tiles">{requestTypes.map(x=><RequestTile key={x.slug} item={x}/>)}</section></div>}
