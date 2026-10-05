@@ -19,6 +19,8 @@ import type { Role } from "../types";
 
 export default function App() {
   const { accounts } = useMsal();
+  const isLoggedIn =
+  accounts.length > 0;
 
   const marketingUsers = [
     "arichard@frontierbankoftexas.bank",
@@ -53,19 +55,32 @@ const setRole = () => {};
           />
 
           <Route
-            path="/request/:slug"
-            element={<RequestForm />}
-          />
+  path="/request/:slug"
+  element={
+    isLoggedIn ? (
+      <RequestForm />
+    ) : (
+      <Navigate to="/" />
+    )
+  }
+/>
+
 
           <Route
             path="/success/:number"
             element={<Success />}
           />
 
-          <Route
-            path="/my-requests"
-            element={<MyRequests />}
-          />
+         <Route
+  path="/my-requests"
+  element={
+    isLoggedIn ? (
+      <MyRequests />
+    ) : (
+      <Navigate to="/" />
+    )
+  }
+/>
 
           <Route
             path="/requests/:id"
