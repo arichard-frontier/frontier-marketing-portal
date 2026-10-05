@@ -60,9 +60,10 @@ export default function MoodyCenterForm() {
   const loadEvents = async () => {
     try {
       const response =
-        await fetch(
-  "http://127.0.0.1:3001/api/moody-events"
+       await fetch(
+  "/api/moody-events"
 );
+
 
       console.log(
         "Response Status:",
