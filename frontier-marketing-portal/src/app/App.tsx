@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useMsal } from "@azure/msal-react";
 import {
   Navigate,
   Route,
@@ -17,14 +18,25 @@ import RequestDetails from "../pages/RequestDetails";
 import type { Role } from "../types";
 
 export default function App() {
-  /*
-    TEMPORARY:
-    Default everyone to marketing while we build.
-    Later we'll switch this back to employee
-    and use Microsoft login/group membership.
-  */
-  const [role, setRole] =
-    useState<Role>("marketing");
+  const { accounts } = useMsal();
+
+  const marketingUsers = [
+    "arichard@frontierbankoftexas.bank",
+    "mpoynter@frontierbankoftexas.bank",
+  ];
+
+  const userEmail =
+    accounts?.[0]?.username?.toLowerCase() ?? "";
+
+  const isMarketingUser =
+    marketingUsers.includes(userEmail);
+
+  const role: Role =
+  isMarketingUser
+    ? "marketing"
+    : "employee";
+
+const setRole = () => {};
 
   return (
     <>
@@ -62,7 +74,13 @@ export default function App() {
 
           <Route
             path="/marketing"
-            element={<Dashboard />}
+            element={
+              isMarketingUser ? (
+                <Dashboard />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
           />
 
           <Route

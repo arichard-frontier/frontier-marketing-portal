@@ -277,7 +277,7 @@ branchDepartment: branch,
           </label>
 
           <label>
-            Content to Include (branch info, perosnal info, event details, pictures etc.)
+            Content to Include (branch info, personal info, event details, pictures etc.)
 
             <textarea
               rows={4}
@@ -363,7 +363,7 @@ branchDepartment: branch,
 )}
 
           <label>
-            Due Date
+            Due Date (please allow at least 3 business days)
 
             <input
               type="date"

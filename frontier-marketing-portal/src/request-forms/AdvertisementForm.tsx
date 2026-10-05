@@ -8,6 +8,9 @@ export default function AdvertisementForm() {
   const [branch, setBranch] =
     useState("");
 
+    const [adSize, setAdSize] =
+  useState("");
+
  const [email, setEmail] =
   useState("");
 
@@ -67,6 +70,7 @@ export default function AdvertisementForm() {
         publicationLocation,
         contractLength,
         medium,
+        adSize,
         adCost,
         contactName,
         contactEmail,
@@ -248,6 +252,20 @@ export default function AdvertisementForm() {
               </option>
             </select>
           </label>
+
+<label>
+  Size of Ad (inches or pixels)
+
+  <input
+    type="text"
+    value={adSize}
+    onChange={(e) =>
+      setAdSize(e.target.value)
+    }
+    placeholder='Example: 8.5" x 11" or 1080 x 1080 px'
+  />
+</label>
+
 
           <label>
             Cost Of Ad
