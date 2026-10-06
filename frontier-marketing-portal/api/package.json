@@ -1,0 +1,8 @@
+{
+  "name": "frontier-marketing-portal-api",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "node-ical": "^0.22.1"
+  }
+}
