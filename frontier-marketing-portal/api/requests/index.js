@@ -20,13 +20,15 @@ module.exports = async function (context, req) {
       },
     });
 
-    const site = await graphClient
-      .api("/sites/frontierbankoftexas.sharepoint.com:/")
+    const lists = await graphClient
+      .api(
+        "/sites/frontierbankoftexas.sharepoint.com,ca8131bf-087c-488c-a8f3-b01fa44a4a0a,454b6bb9-4042-45b1-b6c1-3ea9d754bb54/lists"
+      )
       .get();
 
     context.res = {
       status: 200,
-      body: site,
+      body: lists,
     };
   } catch (error) {
     context.res = {
