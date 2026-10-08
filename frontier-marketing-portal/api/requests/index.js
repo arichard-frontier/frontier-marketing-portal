@@ -20,19 +20,20 @@ module.exports = async function (context, req) {
       },
     });
 
-    const site = await graphClient
+    const result = await graphClient
       .api("/sites/frontierbankoftexas.sharepoint.com")
       .get();
 
     context.res = {
       status: 200,
-      body: site,
+      body: result,
     };
   } catch (error) {
     context.res = {
       status: 500,
       body: {
-        error: error.message,
+        message: error.message,
+        stack: error.stack,
       },
     };
   }
