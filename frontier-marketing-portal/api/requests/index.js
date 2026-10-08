@@ -11,7 +11,6 @@ module.exports = async function (context, req) {
     const token = await credential.getToken(
       "https://graph.microsoft.com/.default"
     );
-    
 
     context.res = {
       status: 200,
