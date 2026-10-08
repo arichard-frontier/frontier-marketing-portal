@@ -37,12 +37,6 @@ module.exports = async function (context, req) {
         )
         .get();
 
-      context.res = {
-        status: 200,
-        body: items,
-      };
-
-      return;
     }
 
     if (req.method === "POST") {
