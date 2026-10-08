@@ -53,29 +53,28 @@ module.exports = async function (context, req) {
           `/sites/${SITE_ID}/lists/${LIST_ID}/items`
         )
         .post({
-          fields: {
-            Title:
-              body.requestTitle ||
-              "New Marketing Request",
+         fields: {
+  Title:
+    body.typeTitle ||
+    "Marketing Request",
 
-            RequestType:
-              body.requestType ||
-              "Other",
+  RequestType:
+    body.typeTitle ||
+    "Other",
 
-            Status: "Submitted",
+  Status: "Submitted",
 
-            Priority:
-              body.priority ||
-              "Normal",
+  Branch:
+    body.branchDepartment ||
+    "",
 
-            Branch:
-              body.branch ||
-              "",
+  SubmittedEmail:
+    body.requesterEmail ||
+    "",
 
-            Description:
-              body.description ||
-              "",
-          },
+  Description:
+    JSON.stringify(body.details || {})
+},
         });
 
       context.res = {
