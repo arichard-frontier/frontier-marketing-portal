@@ -8,39 +8,98 @@ const SITE_ID =
 const LIST_ID =
   "93129ad2-c170-4f4e-b79c-d989748a8b13";
 
+async function getGraphClient() {
+  const credential = new ClientSecretCredential(
+    process.env.TENANT_ID,
+    process.env.CLIENT_ID,
+    process.env.CLIENT_SECRET
+  );
+
+  const token = await credential.getToken(
+    "https://graph.microsoft.com/.default"
+  );
+
+  return Client.init({
+    authProvider: (done) => {
+      done(null, token.token);
+    },
+  });
+}
+
 module.exports = async function (context, req) {
   try {
-    const credential = new ClientSecretCredential(
-      process.env.TENANT_ID,
-      process.env.CLIENT_ID,
-      process.env.CLIENT_SECRET
-    );
+    const graphClient = await getGraphClient();
 
-    const token = await credential.getToken(
-      "https://graph.microsoft.com/.default"
-    );
+    if (req.method === "GET") {
+      const items = await graphClient
+        .api(
+          `/sites/${SITE_ID}/lists/${LIST_ID}/items?expand=fields`
+        )
+        .get();
 
-    const graphClient = Client.init({
-      authProvider: (done) => {
-        done(null, token.token);
-      },
-    });
+      context.res = {
+        status: 200,
+        body: items,
+      };
 
-    const items = await graphClient
-      .api(
-        `/sites/${SITE_ID}/lists/${LIST_ID}/items?expand=fields`
-      )
-      .get();
+      return;
+    }
+
+    if (req.method === "POST") {
+      const body = req.body || {};
+
+      const item = await graphClient
+        .api(
+          `/sites/${SITE_ID}/lists/${LIST_ID}/items`
+        )
+        .post({
+          fields: {
+            Title:
+              body.requestTitle ||
+              "New Marketing Request",
+
+            RequestType:
+              body.requestType ||
+              "Other",
+
+            Status: "Submitted",
+
+            Priority:
+              body.priority ||
+              "Normal",
+
+            Branch:
+              body.branch ||
+              "",
+
+            Description:
+              body.description ||
+              "",
+          },
+        });
+
+      context.res = {
+        status: 200,
+        body: item,
+      };
+
+      return;
+    }
 
     context.res = {
-      status: 200,
-      body: items,
+      status: 405,
+      body: {
+        message: "Method not allowed",
+      },
     };
   } catch (error) {
     context.res = {
       status: 500,
       body: {
         error: error.message,
+        details:
+          error.body ||
+          null,
       },
     };
   }
