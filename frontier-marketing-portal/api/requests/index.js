@@ -12,6 +12,7 @@ module.exports = async function (context, req) {
       "https://graph.microsoft.com/.default"
     );
 
+    
     context.res = {
       status: 200,
       body: {
