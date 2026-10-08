@@ -48,6 +48,15 @@ module.exports = async function (context, req) {
     if (req.method === "POST") {
         context.log("POST HIT");
       const body = req.body || {};
+      context.res = {
+  status: 200,
+  body: {
+    success: true,
+    body
+  }
+};
+
+return;
 
       const item = await graphClient
         .api(
