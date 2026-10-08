@@ -1,8 +1,11 @@
+const { ClientSecretCredential } = require("@azure/identity");
+
 module.exports = async function (context, req) {
   context.res = {
     status: 200,
     body: {
-      working: true
+      libraryLoaded: true,
+      credentialType: typeof ClientSecretCredential
     }
   };
 };
