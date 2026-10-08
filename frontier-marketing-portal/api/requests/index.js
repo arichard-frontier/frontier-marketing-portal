@@ -1,29 +1,12 @@
 module.exports = async function (context, req) {
-  if (req.method === "GET") {
-    context.res = {
-      status: 200,
-      body: {
-        message: "GET requests endpoint working"
-      }
-    };
-    return;
-  }
-
-  if (req.method === "POST") {
-    context.res = {
-      status: 200,
-      body: {
-        message: "POST requests endpoint working",
-        data: req.body
-      }
-    };
-    return;
-  }
-
   context.res = {
-    status: 405,
+    status: 200,
     body: {
-      message: "Method not allowed"
-    }
+      success: true,
+      tenantIdExists: !!process.env.TENANT_ID,
+      clientIdExists: !!process.env.CLIENT_ID,
+      secretExists: !!process.env.CLIENT_SECRET,
+      listIdExists: !!process.env.SHAREPOINT_LIST_ID,
+    },
   };
 };
