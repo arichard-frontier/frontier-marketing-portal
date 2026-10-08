@@ -30,55 +30,49 @@ module.exports = async function (context, req) {
   try {
     const graphClient = await getGraphClient();
 
-    if (req.method === "GET") {
+    const method = (req.method || "").toUpperCase();
+
+    if (method === "GET") {
       const items = await graphClient
-        .api(
-          `/sites/${SITE_ID}/lists/${LIST_ID}/items?expand=fields`
-        )
+        .api(`/sites/${SITE_ID}/lists/${LIST_ID}/items?expand=fields`)
         .get();
 
+      context.res = {
+        status: 200,
+        body: items,
+      };
+
+      return;
     }
 
-    if (req.method === "POST") {
-        context.log("POST HIT");
+    if (method === "POST") {
       const body = req.body || {};
-      context.res = {
-  status: 200,
-  body: {
-    success: true,
-    body
-  }
-};
-
-return;
 
       const item = await graphClient
-        .api(
-          `/sites/${SITE_ID}/lists/${LIST_ID}/items`
-        )
+        .api(`/sites/${SITE_ID}/lists/${LIST_ID}/items`)
         .post({
-         fields: {
-  Title:
-    body.typeTitle ||
-    "Marketing Request",
+          fields: {
+            Title:
+              body.typeTitle ||
+              "Marketing Request",
 
-  RequestType:
-    body.typeTitle ||
-    "Other",
+            RequestType:
+              body.typeTitle ||
+              "Other",
 
-  Status: "Submitted",
+            Status: "Submitted",
 
-  Branch:
-    body.branchDepartment ||
-    "",
+            Branch:
+              body.branchDepartment ||
+              "",
 
-  SubmittedEmail:
-    body.requesterEmail ||
-    "",
+            SubmittedEmail:
+              body.requesterEmail ||
+              "",
 
-  Description:
-    JSON.stringify(body.details || {})
-},
+            Description:
+              JSON.stringify(body.details || {}),
+          },
         });
 
       context.res = {
@@ -93,6 +87,7 @@ return;
       status: 405,
       body: {
         message: "Method not allowed",
+        receivedMethod: method,
       },
     };
   } catch (error) {
@@ -100,9 +95,7 @@ return;
       status: 500,
       body: {
         error: error.message,
-        details:
-          error.body ||
-          null,
+        details: error.body || null,
       },
     };
   }
