@@ -91,12 +91,15 @@ module.exports = async function (context, req) {
       },
     };
   } catch (error) {
-    context.res = {
-      status: 500,
-      body: {
-        error: error.message,
-        details: error.body || null,
-      },
-    };
-  }
+  context.res = {
+    status: 500,
+    body: {
+      error: error.message,
+      statusCode: error.statusCode || null,
+      code: error.code || null,
+      body: error.body || null,
+      stack: error.stack || null,
+    },
+  };
+}
 };
