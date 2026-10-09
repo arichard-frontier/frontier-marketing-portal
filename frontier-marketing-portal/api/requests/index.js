@@ -34,7 +34,9 @@ module.exports = async function (context, req) {
 
     if (method === "GET") {
       const items = await graphClient
-        .api(`/sites/${SITE_ID}/lists/${LIST_ID}/items?expand=fields`)
+        .api(
+          `/sites/${SITE_ID}/lists/${LIST_ID}/items?expand=fields`
+        )
         .get();
 
       context.res = {
@@ -49,7 +51,9 @@ module.exports = async function (context, req) {
       const body = req.body || {};
 
       const item = await graphClient
-        .api(`/sites/${SITE_ID}/lists/${LIST_ID}/items`)
+        .api(
+          `/sites/${SITE_ID}/lists/${LIST_ID}/items`
+        )
         .post({
           fields: {
             Title:
@@ -71,11 +75,27 @@ module.exports = async function (context, req) {
               "",
 
             Description:
-              JSON.stringify(body.details || {}),
+              JSON.stringify(
+                body.details || {}
+              ),
           },
         });
-            if (method === "PATCH") {
+
+      context.res = {
+        status: 200,
+        body: item,
+      };
+
+      return;
+    }
+
+    if (method === "PATCH") {
       const body = req.body || {};
+
+      console.log(
+        "PATCH BODY:",
+        JSON.stringify(body)
+      );
 
       await graphClient
         .api(
@@ -87,19 +107,17 @@ module.exports = async function (context, req) {
             body.note || "",
         });
 
+      console.log(
+        "PATCH SUCCESS:",
+        body.id,
+        body.status
+      );
+
       context.res = {
         status: 200,
         body: {
           success: true,
         },
-      };
-
-      return;
-    }
-
-      context.res = {
-        status: 200,
-        body: item,
       };
 
       return;
@@ -113,15 +131,16 @@ module.exports = async function (context, req) {
       },
     };
   } catch (error) {
-  context.res = {
-    status: 500,
-    body: {
-      error: error.message,
-      statusCode: error.statusCode || null,
-      code: error.code || null,
-      body: error.body || null,
-      stack: error.stack || null,
-    },
-  };
-}
+    context.res = {
+      status: 500,
+      body: {
+        error: error.message,
+        statusCode:
+          error.statusCode || null,
+        code: error.code || null,
+        body: error.body || null,
+        stack: error.stack || null,
+      },
+    };
+  }
 };
