@@ -12,6 +12,7 @@ export async function list(): Promise<MarketingRequest[]> {
 
   const data = await response.json();
 
+  console.log("SharePoint Item", data.value?.[0]);
   return (data.value || []).map((item: any) => ({
     id: String(item.id),
 
@@ -26,10 +27,14 @@ export async function list(): Promise<MarketingRequest[]> {
     workflow: "standard",
 
     requesterName:
-      item.fields?.SubmittedBy || "",
+  item.fields?.SubmittedBy ||
+  item.fields?.Title ||
+  "",
 
-    requesterEmail:
-      item.fields?.SubmittedEmail || "",
+requesterEmail:
+  item.fields?.SubmittedEmail ||
+  item.fields?.EmployeeEmail ||
+  "",
 
     branchDepartment:
       item.fields?.Branch || "",
