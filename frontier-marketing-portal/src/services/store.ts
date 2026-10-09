@@ -104,18 +104,36 @@ export async function updateStatus(
   status: Status,
   note: string
 ) {
-  await fetch("/api/requests", {
-    method: "PATCH",
-    headers: {
-      "Content-Type":
-        "application/json",
-    },
-    body: JSON.stringify({
-      id,
-      status,
-      note,
-    }),
-  });
+  console.log(
+    "UPDATING:",
+    id,
+    status,
+    note
+  );
+
+  const response = await fetch(
+    "/api/requests",
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body: JSON.stringify({
+        id,
+        status,
+        note,
+      }),
+    }
+  );
+
+  const result =
+    await response.json();
+
+  console.log(
+    "PATCH RESULT:",
+    result
+  );
 
   window.dispatchEvent(
     new Event("requests-changed")

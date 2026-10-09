@@ -146,7 +146,7 @@ const counts = useMemo(() => {
     ).length,
   };
 }, [items]);
-  const changeStatus = (
+  const changeStatus = async (
     request: MarketingRequest,
     status: Status
   ) => {
@@ -170,13 +170,16 @@ const counts = useMemo(() => {
       return;
     }
 
-    updateStatus(
+    await updateStatus(
   request.id,
   status,
   note
 );
 
-list().then(setItems);
+const requests =
+  await list();
+
+setItems(requests);
   };
 
   const statuses =
