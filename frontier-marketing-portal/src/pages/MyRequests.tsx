@@ -9,9 +9,14 @@ export default function MyRequests() {
   const { accounts } = useMsal();
 
 const userEmail =
-  accounts[0]?.username?.toLowerCase() || "";
-  const [items, setItems] =
-  useState<MarketingRequest[]>([]);
+accounts[0]?.username?.toLowerCase() || "";
+ 
+const [items, setItems] =
+useState<MarketingRequest[]>([]);
+ 
+console.log("Logged In User:", userEmail);
+console.log("Requests:", items);
+  
 
 useEffect(() => {
   const load = async () => {
