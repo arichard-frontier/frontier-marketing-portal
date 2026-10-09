@@ -1,7 +1,31 @@
-import { FormEvent, useState } from "react";
+import {
+  FormEvent,
+  useEffect,
+  useState,
+} from "react";
+
+import { useMsal } from "@azure/msal-react";
+import { useNavigate } from "react-router-dom";
+
 import { create } from "../services/store";
 
+
 export default function AdvertisementForm() {
+    const { accounts } = useMsal();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (accounts.length > 0) {
+      setFullName(
+        accounts[0].name || ""
+      );
+
+      setEmail(
+        accounts[0].username || ""
+      );
+    }
+  }, [accounts]);
+  
   const [fullName, setFullName] =
     useState("");
 
@@ -55,7 +79,7 @@ export default function AdvertisementForm() {
       workflow: "standard",
 
       requesterName: fullName,
-      requesterEmail: "",
+      requesterEmail: email,
 
       branchDepartment: branch,
 
@@ -84,10 +108,10 @@ export default function AdvertisementForm() {
       privateNote: "",
     });
 
-    alert(
-      `Request ${request.requestNumber} submitted successfully`
-    );
-  };
+navigate(
+  `/success/${request.requestNumber}`
+);
+};
 
   return (
     <div className="page">

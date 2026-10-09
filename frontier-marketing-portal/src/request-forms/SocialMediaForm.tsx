@@ -1,7 +1,29 @@
-import { FormEvent, useState } from "react";
+import {
+  FormEvent,
+  useEffect,
+  useState,
+} from "react";
+
+import { useMsal } from "@azure/msal-react";
+import { useNavigate } from "react-router-dom";
+
 import { create } from "../services/store";
 
 export default function SocialMediaForm() {
+    const { accounts } = useMsal();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (accounts.length > 0) {
+      setFullName(
+        accounts[0].name || ""
+      );
+
+      setEmail(
+        accounts[0].username || ""
+      );
+    }
+  }, [accounts]);
   const [fullName, setFullName] =
     useState("");
 
@@ -35,12 +57,13 @@ export default function SocialMediaForm() {
   const [additionalNotes, setAdditionalNotes] =
     useState("");
 
-  const handleSubmit = (
+  const handleSubmit = async (
     e: FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
 
-    const request = create({
+   const request = await create({
+
       typeSlug: "social-media",
       typeTitle: "Social Media",
       workflow: "standard",
@@ -72,9 +95,9 @@ export default function SocialMediaForm() {
       privateNote: "",
     });
 
-    alert(
-      `Request ${request.requestNumber} submitted successfully`
-    );
+    navigate(
+  `/success/${request.requestNumber}`
+);
   };
 
   return (

@@ -1,7 +1,32 @@
-import { FormEvent, useState } from "react";
+import {
+  FormEvent,
+  useEffect,
+  useState,
+} from "react";
+
+import { useMsal } from "@azure/msal-react";
+import { useNavigate } from "react-router-dom";
+
 import { create } from "../services/store";
 
 export default function SponsorshipForm() {
+    const { accounts } = useMsal();
+  const navigate = useNavigate();
+
+  const [email, setEmail] =
+    useState("");
+
+  useEffect(() => {
+    if (accounts.length > 0) {
+      setFullName(
+        accounts[0].name || ""
+      );
+
+      setEmail(
+        accounts[0].username || ""
+      );
+    }
+  }, [accounts]);
   const [fullName, setFullName] =
     useState("");
 
@@ -53,18 +78,18 @@ export default function SponsorshipForm() {
   const [previousParticipation, setPreviousParticipation] =
     useState("");
 
-  const handleSubmit = (
+const handleSubmit = async (
     e: FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
 
-    const request = create({
+   const request = await create({
       typeSlug: "sponsorship",
       typeTitle: "Sponsorship",
       workflow: "standard",
 
       requesterName: fullName,
-      requesterEmail: "",
+      requesterEmail: email,
 
       branchDepartment: branch,
 
@@ -74,6 +99,7 @@ export default function SponsorshipForm() {
 
       details: {
         fullName,
+        email,
         branch,
         title,
         eventName,
@@ -96,9 +122,9 @@ export default function SponsorshipForm() {
       privateNote: "",
     });
 
-    alert(
-      `Request ${request.requestNumber} submitted successfully`
-    );
+    navigate(
+  `/success/${request.requestNumber}`
+);
   };
 
   return (
@@ -161,6 +187,20 @@ export default function SponsorshipForm() {
               }
             />
           </label>
+
+          <label>
+  Email Address
+
+  <input
+    type="email"
+    value={email}
+    onChange={(e) =>
+      setEmail(
+        e.target.value
+      )
+    }
+  />
+</label>
 
           <label>
             Your Branch

@@ -1,25 +1,54 @@
-import { FormEvent, useState } from "react";
+import {
+  FormEvent,
+  useEffect,
+  useState,
+} from "react";
+
+import { useMsal } from "@azure/msal-react";
+import { useNavigate } from "react-router-dom";
+
 import { create } from "../services/store";
 
 export default function EmployeeSpotlightForm() {
+  const { accounts } = useMsal();
+  const navigate = useNavigate();
+
+  const [requesterName, setRequesterName] =
+    useState("");
+
+  const [requesterEmail, setRequesterEmail] =
+    useState("");
+
   const [employeeName, setEmployeeName] =
     useState("");
 
   const [employeeStory, setEmployeeStory] =
     useState("");
 
-  const handleSubmit = (
+  useEffect(() => {
+    if (accounts.length > 0) {
+      setRequesterName(
+        accounts[0].name || ""
+      );
+
+      setRequesterEmail(
+        accounts[0].username || ""
+      );
+    }
+  }, [accounts]);
+
+  const handleSubmit = async (
     e: FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
 
-    const request = create({
+    const request = await create({
       typeSlug: "employee-spotlight",
       typeTitle: "Employee Spotlight",
       workflow: "standard",
 
-      requesterName: employeeName,
-      requesterEmail: "",
+      requesterName,
+      requesterEmail,
 
       branchDepartment: "",
 
@@ -36,8 +65,8 @@ export default function EmployeeSpotlightForm() {
       privateNote: "",
     });
 
-    alert(
-      `Request ${request.requestNumber} submitted successfully`
+    navigate(
+      `/success/${request.requestNumber}`
     );
   };
 
@@ -87,7 +116,8 @@ export default function EmployeeSpotlightForm() {
           </label>
 
           <label>
-            Tell Us About This Employee And Why They Should Be Featured
+            Tell Us About This Employee And Why
+            They Should Be Featured
 
             <textarea
               rows={8}
@@ -105,7 +135,8 @@ export default function EmployeeSpotlightForm() {
               type="submit"
               className="primary"
             >
-              Submit Employee Spotlight Nomination
+              Submit Employee Spotlight
+              Nomination
             </button>
           </div>
         </form>

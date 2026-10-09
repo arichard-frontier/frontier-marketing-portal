@@ -5,6 +5,9 @@ import {
   useState,
 } from "react";
 
+import { useMsal } from "@azure/msal-react";
+import { useNavigate } from "react-router-dom";
+
 import { create } from "../services/store";
 
 type MoodyEvent = {
@@ -14,6 +17,20 @@ type MoodyEvent = {
 };
 
 export default function MoodyCenterForm() {
+    const { accounts } = useMsal();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (accounts.length > 0) {
+      setFullName(
+        accounts[0].name || ""
+      );
+
+      setEmail(
+        accounts[0].username || ""
+      );
+    }
+  }, [accounts]);
   const [fullName, setFullName] =
     useState("");
 
@@ -207,9 +224,9 @@ export default function MoodyCenterForm() {
           "",
       });
 
-    alert(
-      `Request ${request.requestNumber} submitted successfully`
-    );
+    navigate(
+  `/success/${request.requestNumber}`
+);
   };
 
   return (
