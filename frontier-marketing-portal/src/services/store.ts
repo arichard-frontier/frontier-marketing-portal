@@ -39,8 +39,12 @@ export async function create(
 
   console.log("API RESULT:", result);
 
+  const requestNumber = `MKT-${new Date().getFullYear()}-${String(
+    result.id || 0
+  ).padStart(4, "0")}`;
+
   return {
-    requestNumber: "SP-TEST",
+    requestNumber,
     ...result,
   };
 }
