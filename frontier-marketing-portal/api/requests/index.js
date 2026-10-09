@@ -74,6 +74,28 @@ module.exports = async function (context, req) {
               JSON.stringify(body.details || {}),
           },
         });
+            if (method === "PATCH") {
+      const body = req.body || {};
+
+      await graphClient
+        .api(
+          `/sites/${SITE_ID}/lists/${LIST_ID}/items/${body.id}/fields`
+        )
+        .patch({
+          Status: body.status,
+          MarketingNotes:
+            body.note || "",
+        });
+
+      context.res = {
+        status: 200,
+        body: {
+          success: true,
+        },
+      };
+
+      return;
+    }
 
       context.res = {
         status: 200,

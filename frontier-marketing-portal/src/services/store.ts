@@ -104,17 +104,20 @@ export async function updateStatus(
   status: Status,
   note: string
 ) {
-  const items = await list();
+  await fetch("/api/requests", {
+    method: "PATCH",
+    headers: {
+      "Content-Type":
+        "application/json",
+    },
+    body: JSON.stringify({
+      id,
+      status,
+      note,
+    }),
+  });
 
-  const updated = items.map((r) =>
-    r.id === id
-      ? {
-          ...r,
-          status,
-          submitterNote: note,
-        }
-      : r
+  window.dispatchEvent(
+    new Event("requests-changed")
   );
-
-  save(updated);
 }
