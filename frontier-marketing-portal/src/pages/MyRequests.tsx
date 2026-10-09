@@ -1,3 +1,4 @@
+import { useMsal } from "@azure/msal-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -5,6 +6,10 @@ import { list } from "../services/store";
 import type { MarketingRequest } from "../types";
 
 export default function MyRequests() {
+  const { accounts } = useMsal();
+
+const userEmail =
+  accounts[0]?.username?.toLowerCase() || "";
   const [items, setItems] =
   useState<MarketingRequest[]>([]);
 
@@ -58,7 +63,14 @@ useEffect(() => {
           </thead>
 
           <tbody>
-            {items.map((r) => (
+  {items
+    .filter(
+      (r) =>
+        r.requesterEmail
+          ?.toLowerCase()
+          .trim() === userEmail
+    )
+    .map((r) => (
               <tr key={r.id}>
                 <td>
                   <Link
