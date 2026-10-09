@@ -1,5 +1,6 @@
 import { create } from "../services/store";
 import { FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 type BranchInfo = {
   address: string;
@@ -109,6 +110,7 @@ const [additionalNotes, setAdditionalNotes] =
   const [branchPhone, setBranchPhone] = useState(
     branchData["Elgin Headquarters"].phone
   );
+  const navigate = useNavigate();
 
   const handleBranchChange = (
     branchName: string
@@ -160,9 +162,7 @@ const handleSubmit = async (
     privateNote: "",
   });
 
-  alert(
-    `Request ${request.requestNumber} submitted successfully`
-  );
+  navigate(`/success/${request.requestNumber}`);
 };
 return (
     <div className="page">

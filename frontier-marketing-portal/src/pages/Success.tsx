@@ -1,1 +1,41 @@
-import {Link,useParams} from 'react-router-dom'; export default function Success(){const {number}=useParams();return <div className="page narrow"><div className="success"><span>✓</span><h1>Request submitted</h1><p>Your request number is</p><strong>{number}</strong><p>A production version will email the submitter a full copy after the API confirms the request was saved.</p><div className="actions"><Link className="secondary buttonLink" to="/my-requests">View my requests</Link><Link className="primary buttonLink" to="/">Submit another</Link></div></div></div>}
+import { Link, useParams } from "react-router-dom";
+
+export default function Success() {
+  const { number } = useParams();
+
+  return (
+    <div className="page narrow">
+      <div className="success">
+        <span>✓</span>
+
+        <h1>Request Submitted Successfully</h1>
+
+        <p>
+          Request #{number} has been submitted successfully.
+        </p>
+
+        <p>
+          You can track the progress of your request in the
+          <strong> My Requests </strong>
+          tab.
+        </p>
+
+        <div className="actions">
+          <Link
+            className="secondary buttonLink"
+            to="/my-requests"
+          >
+            View My Requests
+          </Link>
+
+          <Link
+            className="primary buttonLink"
+            to="/"
+          >
+            Return Home
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
