@@ -1,6 +1,8 @@
 import { create } from "../services/store";
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMsal } from "@azure/msal-react";
+import { useEffect } from "react";
 
 type BranchInfo = {
   address: string;
@@ -73,6 +75,17 @@ const branchData: Record<string, BranchInfo> = {
 };
 
 export default function BusinessCardsForm() {
+  const { accounts } = useMsal();
+  useEffect(() => {
+  if (accounts.length > 0) {
+    setEmail(accounts[0].username || "");
+
+    setFullName(
+      accounts[0].name || ""
+    );
+  }
+}, [accounts]);
+
   const [fullName, setFullName] =
   useState("");
 
