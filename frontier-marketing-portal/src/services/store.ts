@@ -12,7 +12,10 @@ export async function list(): Promise<MarketingRequest[]> {
 
   const data = await response.json();
 
-  console.log("SharePoint Item", data.value?.[0]);
+  console.log(
+  "SharePoint Fields",
+  data.value?.[0]?.fields
+);
   return (data.value || []).map((item: any) => ({
     id: String(item.id),
 
