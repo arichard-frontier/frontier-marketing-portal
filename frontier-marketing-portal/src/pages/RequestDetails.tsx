@@ -1,16 +1,64 @@
-import { Link, useParams } from "react-router-dom";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  Link,
+  useParams,
+} from "react-router-dom";
+
 import { list } from "../services/store";
+
+import type {
+  MarketingRequest,
+} from "../types";
 
 export default function RequestDetails() {
   const { id } = useParams();
 
-  const request = list().find(
-    (r) => r.id === id
-  );
+  const [request, setRequest] =
+    useState<MarketingRequest | null>(null);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  useEffect(() => {
+    const loadRequest = async () => {
+      const requests = await list();
+
+      const found =
+        requests.find(
+          (r) => r.id === id
+        ) || null;
+
+      setRequest(found);
+      setLoading(false);
+    };
+
+    loadRequest();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="page">
+        <div className="formCard">
+          <h1>Loading...</h1>
+        </div>
+      </div>
+    );
+  }
 
   if (!request) {
     return (
       <div className="page">
+        <Link
+          to="/my-requests"
+          className="back"
+        >
+          ← Back to My Requests
+        </Link>
+
         <div className="formCard">
           <h1>Request Not Found</h1>
         </div>
@@ -92,7 +140,7 @@ export default function RequestDetails() {
 
         <div className="detailsGrid">
           {Object.entries(
-            request.details
+            request.details || {}
           ).map(([key, value]) => (
             <div
               key={key}
