@@ -15,7 +15,7 @@ const [items, setItems] =
 useState<MarketingRequest[]>([]);
  
 console.log("Logged In User:", userEmail);
-console.log("Requests:", items);
+console.table(items);
   
 
 useEffect(() => {
