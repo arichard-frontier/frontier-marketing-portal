@@ -41,10 +41,11 @@ export default function Dashboard() {
   const [items, setItems] =
   useState<MarketingRequest[]>([]);
 
-  const [tab, setTab] = useState<
+ const [tab, setTab] = useState<
   "standard" |
   "moody" |
-  "apparel"
+  "apparel" |
+  "completed"
 >("standard");
   const [requestTypeFilter, setRequestTypeFilter] =
   useState("All");
@@ -78,11 +79,25 @@ export default function Dashboard() {
  const filtered = items.filter(
   (request) => {
     const workflowMatch =
-  tab === "apparel"
+  tab === "completed"
+    ? [
+        "Completed",
+        "Rejected",
+        "Accepted",
+      ].includes(
+        request.status
+      )
+    : tab === "apparel"
     ? request.typeSlug ===
       "frontier-apparel"
-    : request.workflow ===
-      tab;
+    : request.workflow === tab &&
+      ![
+        "Completed",
+        "Rejected",
+        "Accepted",
+      ].includes(
+        request.status
+      );
 
     const typeMatch =
       requestTypeFilter === "All"
@@ -115,35 +130,50 @@ export default function Dashboard() {
 );
 
 const counts = useMemo(() => {
-  return {
-    submitted: items.filter(
+  const activeRequests =
+    items.filter(
       (request) =>
-        request.status ===
-        "Submitted"
-    ).length,
-
-    inProgress: items.filter(
-      (request) =>
-        [
-          "In Progress",
-          "Proof Sent",
-          "Waiting Approval",
-          "Ordered",
+        ![
+          "Completed",
+          "Rejected",
           "Accepted",
         ].includes(
           request.status
         )
-    ).length,
+    );
 
-    completed: items.filter(
-      (request) =>
-        [
-          "Completed",
-          "Rejected",
-        ].includes(
-          request.status
-        )
-    ).length,
+  return {
+    submitted:
+      activeRequests.filter(
+        (request) =>
+          request.status ===
+          "Submitted"
+      ).length,
+
+    inProgress:
+      activeRequests.filter(
+        (request) =>
+          [
+            "In Progress",
+            "Proof Sent",
+            "Waiting Approval",
+            "Ordered",
+          ].includes(
+            request.status
+          )
+      ).length,
+
+    completed:
+      items.filter(
+        (request) =>
+          [
+            "Completed",
+            "Rejected",
+            "Accepted",
+          ].includes(
+            request.status
+          )
+      ).length,
   };
 }, [items]);
   const changeStatus = async (
@@ -182,8 +212,16 @@ const requests =
 setItems(requests);
   };
 
-  const statuses =
-  tab === "moody"
+  const completed: Status[] = [
+  "Completed",
+  "Accepted",
+  "Rejected",
+];
+
+const statuses =
+  tab === "completed"
+    ? completed
+    : tab === "moody"
     ? moody
     : tab === "apparel"
     ? apparel
@@ -282,7 +320,50 @@ setItems(requests);
 >
   Frontier Apparel
 </button>
+<button
+  className={
+    tab === "completed"
+      ? "active"
+      : ""
+  }
+  onClick={() =>
+    setTab(
+      "completed"
+    )
+  }
+>
+  Completed
+</button>
       </div>
+      <div
+  style={{
+    marginTop: "20px",
+    marginBottom: "20px",
+  }}
+>
+  <label>
+    Search Requests
+
+    <input
+      type="text"
+      placeholder="Request #, name, email, branch..."
+      value={searchTerm}
+      onChange={(e) =>
+        setSearchTerm(
+          e.target.value
+        )
+      }
+      style={{
+        width: "100%",
+        marginTop: "8px",
+        padding: "10px",
+        borderRadius: "8px",
+        border:
+          "1px solid #d6d0c4",
+      }}
+    />
+  </label>
+</div>
       <div
   style={{
     marginTop: "20px",

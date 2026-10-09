@@ -54,14 +54,20 @@ requesterEmail:
       "Submitted",
 
     assignedTo:
-      item.fields?.AssignedTo || "",
+  item.fields?.AssignedTo || "",
 
-    details: {},
+details:
+  item.fields?.Description
+    ? JSON.parse(
+        item.fields.Description
+      )
+    : {},
 
-    submitterNote: "",
+submitterNote: "",
 
-    privateNote:
-      item.fields?.MarketingNotes || "",
+privateNote:
+  item.fields?.MarketingNotes || "",
+
   }));
 }
 
