@@ -143,13 +143,12 @@ export default function MoodyCenterForm() {
         selectedEventId
     );
 
-  const handleSubmit = (
+  const handleSubmit = async (
     e: FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
 
-    const request =
-      create({
+    const request = await create({
         typeSlug:
           "moody-center",
 

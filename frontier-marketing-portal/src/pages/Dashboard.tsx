@@ -39,7 +39,7 @@ const apparel: Status[] = [
 ];
 export default function Dashboard() {
   const [items, setItems] =
-    useState<MarketingRequest[]>(list());
+  useState<MarketingRequest[]>([]);
 
   const [tab, setTab] = useState<
   "standard" |
@@ -52,20 +52,29 @@ export default function Dashboard() {
   useState("");
 
   useEffect(() => {
-    const fn = () => setItems(list());
+  const load = async () => {
+    const requests = await list();
+    setItems(requests);
+  };
 
-    addEventListener(
+  load();
+
+  const fn = async () => {
+    const requests = await list();
+    setItems(requests);
+  };
+
+  addEventListener(
+    "requests-changed",
+    fn
+  );
+
+  return () =>
+    removeEventListener(
       "requests-changed",
       fn
     );
-
-    return () =>
-      removeEventListener(
-        "requests-changed",
-        fn
-      );
-  }, []);
-
+}, []);
  const filtered = items.filter(
   (request) => {
     const workflowMatch =
@@ -162,12 +171,12 @@ const counts = useMemo(() => {
     }
 
     updateStatus(
-      request.id,
-      status,
-      note
-    );
+  request.id,
+  status,
+  note
+);
 
-    setItems(list());
+list().then(setItems);
   };
 
   const statuses =

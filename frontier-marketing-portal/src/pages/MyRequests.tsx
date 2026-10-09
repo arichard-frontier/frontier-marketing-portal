@@ -6,22 +6,32 @@ import type { MarketingRequest } from "../types";
 
 export default function MyRequests() {
   const [items, setItems] =
-    useState<MarketingRequest[]>(list());
+  useState<MarketingRequest[]>([]);
 
-  useEffect(() => {
-    const fn = () => setItems(list());
+useEffect(() => {
+  const load = async () => {
+    const requests = await list();
+    setItems(requests);
+  };
 
-    addEventListener(
+  load();
+
+  const fn = async () => {
+    const requests = await list();
+    setItems(requests);
+  };
+
+  addEventListener(
+    "requests-changed",
+    fn
+  );
+
+  return () =>
+    removeEventListener(
       "requests-changed",
       fn
     );
-
-    return () =>
-      removeEventListener(
-        "requests-changed",
-        fn
-      );
-  }, []);
+}, []);
 
   return (
     <div className="page">

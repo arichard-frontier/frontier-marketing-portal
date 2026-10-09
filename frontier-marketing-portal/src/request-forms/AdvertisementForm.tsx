@@ -44,12 +44,12 @@ export default function AdvertisementForm() {
   const [previousParticipation, setPreviousParticipation] =
     useState("");
 
-  const handleSubmit = (
+  const handleSubmit = async (
     e: FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
 
-    const request = create({
+    const request = await create({
       typeSlug: "advertisement",
       typeTitle: "Advertisement",
       workflow: "standard",

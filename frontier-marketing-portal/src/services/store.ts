@@ -7,13 +7,54 @@ const seed:MarketingRequest[]=[
  {id:'2',requestNumber:'MKT-2026-0002',typeSlug:'moody-center',typeTitle:'Moody Center Request',workflow:'moody',requesterName:'Taylor Smith',requesterEmail:'taylor@example.com',branchDepartment:'Austin',dueDate:'2026-10-15',submittedAt:'2026-09-28T15:00:00Z',status:'Submitted',assignedTo:'',details:{event:'Concert',tickets:'2',businessPurpose:'Customer appreciation'},submitterNote:'',privateNote:''}
 ];
 
-export function list():MarketingRequest[]{
- const raw=localStorage.getItem(KEY);
- if(!raw){
-  localStorage.setItem(KEY,JSON.stringify(seed));
-  return seed;
- }
- return JSON.parse(raw);
+export async function list(): Promise<MarketingRequest[]> {
+  const response = await fetch("/api/requests");
+
+  const data = await response.json();
+
+  return (data.value || []).map((item: any) => ({
+    id: String(item.id),
+
+    requestNumber: `MKT-${new Date().getFullYear()}-${String(
+      item.id
+    ).padStart(4, "0")}`,
+
+    typeSlug: "",
+    typeTitle:
+      item.fields?.RequestType || "Other",
+
+    workflow: "standard",
+
+    requesterName:
+      item.fields?.SubmittedBy || "",
+
+    requesterEmail:
+      item.fields?.SubmittedEmail || "",
+
+    branchDepartment:
+      item.fields?.Branch || "",
+
+    dueDate:
+      item.fields?.DateNeeded || "",
+
+    submittedAt:
+      item.createdDateTime ||
+      new Date().toISOString(),
+
+    status:
+      item.fields?.Status ||
+      "Submitted",
+
+    assignedTo:
+      item.fields?.AssignedTo || "",
+
+    details: {},
+
+    submitterNote: "",
+
+    privateNote:
+      item.fields?.MarketingNotes || "",
+  }));
 }
 
 function save(items:MarketingRequest[]){
@@ -50,12 +91,22 @@ export async function create(
 }
 
 
-export function updateStatus(id:string,status:Status,note:string){
- const items=list().map(r=>
-  r.id===id
-   ? {...r,status,submitterNote:note}
-   : r
- );
+export async function updateStatus(
+  id: string,
+  status: Status,
+  note: string
+) {
+  const items = await list();
 
- save(items);
+  const updated = items.map((r) =>
+    r.id === id
+      ? {
+          ...r,
+          status,
+          submitterNote: note,
+        }
+      : r
+  );
+
+  save(updated);
 }
