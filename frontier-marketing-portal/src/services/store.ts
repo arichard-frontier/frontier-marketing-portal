@@ -75,12 +75,17 @@ export async function list(): Promise<MarketingRequest[]> {
           "",
 
         submittedAt:
-          item.createdDateTime ||
-          new Date().toISOString(),
+  item.createdDateTime ||
+  new Date().toISOString(),
 
-        status:
-          item.fields?.Status ||
-          "Submitted",
+updatedAt:
+  item.lastModifiedDateTime ||
+  item.createdDateTime ||
+  new Date().toISOString(),
+
+status:
+  item.fields?.Status ||
+  "Submitted",
 
         assignedTo:
           item.fields?.AssignedTo ||

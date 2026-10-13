@@ -28,12 +28,27 @@ export default function RequestDetails() {
       const requests = await list();
 
       const found =
-        requests.find(
-          (r) => r.id === id
-        ) || null;
+  requests.find(
+    (r) => r.id === id
+  ) || null;
 
-      setRequest(found);
-      setLoading(false);
+setRequest(found);
+
+if (found) {
+  localStorage.setItem(
+    `request-seen-${found.id}`,
+    found.updatedAt ||
+      found.submittedAt
+  );
+
+  window.dispatchEvent(
+    new Event(
+      "request-notifications-changed"
+    )
+  );
+}
+
+setLoading(false);
     };
 
     loadRequest();

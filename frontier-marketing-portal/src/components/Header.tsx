@@ -2,6 +2,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useMsal } from "@azure/msal-react";
 
 import { Link } from "react-router-dom";
 
@@ -17,39 +18,96 @@ export default function Header({
   role: Role;
   setRole: (r: Role) => void;
 }) {
+  const { accounts } = useMsal();
+
+  const userEmail =
+    accounts[0]?.username?.toLowerCase() || "";
+
   const [newRequestCount, setNewRequestCount] =
     useState(0);
 
-  useEffect(() => {
-    const loadCount = async () => {
-      const requests = await list();
+  const [myRequestUpdateCount, setMyRequestUpdateCount] =
+    useState(0);
 
-      const submitted =
-        requests.filter(
-          (request) =>
-            request.status === "Submitted"
-        ).length;
+ useEffect(() => {
+  const loadCounts = async () => {
+    const requests = await list();
 
-      setNewRequestCount(submitted);
-    };
+    const submitted =
+      requests.filter(
+        (request) =>
+          request.status === "Submitted"
+      ).length;
 
-    loadCount();
+    setNewRequestCount(submitted);
 
-    const refresh = () => {
-      loadCount();
-    };
+    const myUpdatedRequests =
+      requests.filter((request) => {
+        const belongsToUser =
+          request.requesterEmail
+            ?.toLowerCase()
+            .trim() === userEmail;
 
-    addEventListener(
+        if (
+          !belongsToUser ||
+          !request.updatedAt
+        ) {
+          return false;
+        }
+
+        const seenAt =
+          localStorage.getItem(
+            `request-seen-${request.id}`
+          );
+
+        if (!seenAt) {
+          return (
+            request.updatedAt !==
+            request.submittedAt
+          );
+        }
+
+        return (
+          new Date(
+            request.updatedAt
+          ).getTime() >
+          new Date(seenAt).getTime()
+        );
+      }).length;
+
+    setMyRequestUpdateCount(
+      myUpdatedRequests
+    );
+  };
+
+  loadCounts();
+
+  const refresh = () => {
+    loadCounts();
+  };
+
+  addEventListener(
+    "requests-changed",
+    refresh
+  );
+
+  addEventListener(
+    "request-notifications-changed",
+    refresh
+  );
+
+  return () => {
+    removeEventListener(
       "requests-changed",
       refresh
     );
 
-    return () =>
-      removeEventListener(
-        "requests-changed",
-        refresh
-      );
-  }, []);
+    removeEventListener(
+      "request-notifications-changed",
+      refresh
+    );
+  };
+}, [userEmail]);
 
   return (
     <header>
@@ -68,13 +126,39 @@ export default function Header({
       </Link>
 
       <nav>
-        <Link to="/">
-          New Request
-        </Link>
+        <Link
+  to="/my-requests"
+  style={{
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+  }}
+>
+  My Requests
 
-        <Link to="/my-requests">
-          My Requests
-        </Link>
+  {myRequestUpdateCount > 0 && (
+    <span
+      style={{
+        background: "#c62828",
+        color: "#ffffff",
+        borderRadius: "999px",
+        minWidth: "18px",
+        height: "18px",
+        padding: "0 5px",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "11px",
+        fontWeight: "700",
+        lineHeight: "18px",
+      }}
+    >
+      {myRequestUpdateCount}
+    </span>
+  )}
+</Link>
+
+      
 
         {role === "marketing" && (
   <Link

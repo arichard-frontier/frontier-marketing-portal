@@ -40,7 +40,7 @@ export interface MarketingRequest {
 
   dueDate: string;
   submittedAt: string;
-
+updatedAt?: string;
   status: Status;
 
   assignedTo: string;

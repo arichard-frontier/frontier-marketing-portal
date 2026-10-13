@@ -16,6 +16,33 @@ useState<MarketingRequest[]>([]);
  
 console.log("Logged In User:", userEmail);
 console.table(items);
+const hasNewUpdate = (
+  request: MarketingRequest
+) => {
+  if (!request.updatedAt) {
+    return false;
+  }
+
+  const seenAt = localStorage.getItem(
+    `request-seen-${request.id}`
+  );
+
+  if (!seenAt) {
+    return (
+      request.updatedAt !==
+      request.submittedAt
+    );
+  }
+
+  return (
+    new Date(
+      request.updatedAt
+    ).getTime() >
+    new Date(
+      seenAt
+    ).getTime()
+  );
+};
   
 
 useEffect(() => {
@@ -79,12 +106,33 @@ useEffect(() => {
               <tr key={r.id}>
                 <td>
                   <Link
-                    to={`/requests/${r.id}`}
-                  >
-                    <b>
-                      {r.requestNumber}
-                    </b>
-                  </Link>
+  to={`/requests/${r.id}`}
+  style={{
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+  }}
+>
+  <b>
+    {r.requestNumber}
+  </b>
+
+  {hasNewUpdate(r) && (
+    <span
+      style={{
+        background: "#c62828",
+        color: "#ffffff",
+        borderRadius: "999px",
+        padding: "3px 7px",
+        fontSize: "10px",
+        fontWeight: "700",
+        lineHeight: "1",
+      }}
+    >
+      NEW
+    </span>
+  )}
+</Link>
                 </td>
 
                 <td>
