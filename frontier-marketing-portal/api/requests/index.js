@@ -7,6 +7,8 @@ const SITE_ID =
 
 const LIST_ID =
   "93129ad2-c170-4f4e-b79c-d989748a8b13";
+   const MARKETING_EMAIL =
+  "marketing@frontierbankoftexas.bank";
 
 async function getGraphClient() {
   const credential = new ClientSecretCredential(
@@ -70,14 +72,18 @@ module.exports = async function (context, req) {
               body.branchDepartment ||
               "",
 
-            SubmittedEmail:
-              body.requesterEmail ||
-              "",
-
-            Description:
-              JSON.stringify(
-                body.details || {}
-              ),
+            SubmittedBy:
+body.requesterName ||
+"",
+ 
+SubmittedEmail:
+body.requesterEmail ||
+"",
+ 
+Description:
+JSON.stringify(
+body.details || {}
+),
           },
         });
 
@@ -90,39 +96,117 @@ module.exports = async function (context, req) {
     }
 
     if (method === "PATCH") {
-      const body = req.body || {};
+  const body = req.body || {};
 
-      console.log(
-        "PATCH BODY:",
-        JSON.stringify(body)
-      );
+  console.log(
+    "PATCH BODY:",
+    JSON.stringify(body)
+  );
 
-      await graphClient
-        .api(
-          `/sites/${SITE_ID}/lists/${LIST_ID}/items/${body.id}/fields`
-        )
-        .patch({
-          Status: body.status,
-          MarketingNotes:
-            body.note || "",
-        });
+  // Get the request before updating it
+  // so we have the submitter's email.
+  const existingItem = await graphClient
+    .api(
+      `/sites/${SITE_ID}/lists/${LIST_ID}/items/${body.id}?expand=fields`
+    )
+    .get();
 
-      console.log(
-        "PATCH SUCCESS:",
-        body.id,
-        body.status
-      );
+  const requesterEmail =
+    existingItem.fields?.SubmittedEmail || "";
 
-      context.res = {
-        status: 200,
-        body: {
-          success: true,
+  const requesterName =
+    existingItem.fields?.SubmittedBy || "";
+
+  // Update SharePoint first.
+  await graphClient
+    .api(
+      `/sites/${SITE_ID}/lists/${LIST_ID}/items/${body.id}/fields`
+    )
+    .patch({
+      Status: body.status,
+      MarketingNotes:
+        body.note || "",
+    });
+
+  console.log(
+    "PATCH SUCCESS:",
+    body.id,
+    body.status
+  );
+
+  // Only attempt an email when the request
+  // has a requester email.
+  if (requesterEmail) {
+    const requestNumber =
+      `MKT-${new Date().getFullYear()}-${String(
+        body.id
+      ).padStart(4, "0")}`;
+
+    const noteText =
+      body.note
+        ? `\n\nUpdate from Marketing:\n${body.note}`
+        : "";
+
+    const greeting =
+      requesterName
+        ? `Hi ${requesterName},`
+        : "Hello,";
+
+    const emailBody =
+      `${greeting}
+
+Your Frontier Marketing request has been updated.
+
+Request: ${requestNumber}
+Status: ${body.status}${noteText}
+
+You can view the latest details under My Requests in the Frontier Marketing Portal.
+
+Thank you,
+Frontier Marketing`;
+
+    await graphClient
+      .api(
+        `/users/${MARKETING_EMAIL}/sendMail`
+      )
+      .post({
+        message: {
+          subject:
+            `Marketing Request ${requestNumber} Updated`,
+
+          body: {
+            contentType: "Text",
+            content: emailBody,
+          },
+
+          toRecipients: [
+            {
+              emailAddress: {
+                address:
+                  requesterEmail,
+              },
+            },
+          ],
         },
-      };
 
-      return;
-    }
+        saveToSentItems: true,
+      });
 
+    console.log(
+      "STATUS EMAIL SENT:",
+      requesterEmail
+    );
+  }
+
+  context.res = {
+    status: 200,
+    body: {
+      success: true,
+    },
+  };
+
+  return;
+}
     context.res = {
       status: 405,
       body: {

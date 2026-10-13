@@ -133,6 +133,27 @@ export default function RequestDetails() {
             {request.dueDate}
           </p>
         )}
+        {request.submitterNote && (
+  <div
+    className="note"
+    style={{
+      marginTop: "20px",
+      padding: "16px",
+      borderRadius: "8px",
+      background: "#fff8e1",
+    }}
+  >
+    <strong>Status Update:</strong>
+
+    <p
+      style={{
+        marginBottom: 0,
+      }}
+    >
+      {request.submitterNote}
+    </p>
+  </div>
+)}
 
         <hr />
 

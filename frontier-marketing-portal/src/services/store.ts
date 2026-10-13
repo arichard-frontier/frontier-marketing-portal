@@ -3,8 +3,9 @@ import type { MarketingRequest,Status } from '../types';
 const KEY='frontier-marketing-requests';
 
 const seed:MarketingRequest[]=[
- {id:'1',requestNumber:'MKT-2026-0001',typeSlug:'marketing-materials',typeTitle:'Marketing Material',workflow:'standard',requesterName:'Jordan Lee',requesterEmail:'jordan@example.com',branchDepartment:'Round Rock',dueDate:'2026-10-08',submittedAt:'2026-09-28T14:00:00Z',status:'Submitted',assignedTo:'',details:{materialType:'Flyer',campaign:'Small Business Event'},submitterNote:'',privateNote:''},
- {id:'2',requestNumber:'MKT-2026-0002',typeSlug:'moody-center',typeTitle:'Moody Center Request',workflow:'moody',requesterName:'Taylor Smith',requesterEmail:'taylor@example.com',branchDepartment:'Austin',dueDate:'2026-10-15',submittedAt:'2026-09-28T15:00:00Z',status:'Submitted',assignedTo:'',details:{event:'Concert',tickets:'2',businessPurpose:'Customer appreciation'},submitterNote:'',privateNote:''}
+ {id:'1',requestNumber:'MKT-2026-0001',typeSlug:'marketing-materials',typeTitle:'Marketing Material',workflow:'standard',requesterName:'Jordan Lee',requesterEmail:'jordan@example.com',branchDepartment:'Round Rock',dueDate:'2026-10-08',submittedAt:'2026-09-28T14:00:00Z',status:'Submitted',assignedTo:'',details:{materialType:'Flyer',campaign:'Small Business Event'},
+ submitterNote:'',privateNote:''},
+  {id:'2',requestNumber:'MKT-2026-0002',typeSlug:'moody-center',typeTitle:'Moody Center Request',workflow:'moody',requesterName:'Taylor Smith',requesterEmail:'taylor@example.com',branchDepartment:'Austin',dueDate:'2026-10-15',submittedAt:'2026-09-28T15:00:00Z',status:'Submitted',assignedTo:'',details:{event:'Concert',tickets:'2',businessPurpose:'Customer appreciation'},submitterNote:'',privateNote:''}
 ];
 
 export async function list(): Promise<MarketingRequest[]> {
@@ -31,8 +32,28 @@ export async function list(): Promise<MarketingRequest[]> {
 
     requesterName:
   item.fields?.SubmittedBy ||
-  item.fields?.Title ||
-  "",
+  item.fields?.Description
+    ? (() => {
+        try {
+          const details =
+            JSON.parse(
+              item.fields?.Description ||
+                "{}"
+            );
+
+          return (
+            details.fullName ||
+            item.fields?.SubmittedBy ||
+            ""
+          );
+        } catch {
+          return (
+            item.fields?.SubmittedBy ||
+            ""
+          );
+        }
+      })()
+    : "",
 
 requesterEmail:
   item.fields?.SubmittedEmail ||
@@ -63,10 +84,10 @@ details:
       )
     : {},
 
-submitterNote: "",
-
-privateNote:
+submitterNote:
   item.fields?.MarketingNotes || "",
+
+privateNote: "",
 
   }));
 }
