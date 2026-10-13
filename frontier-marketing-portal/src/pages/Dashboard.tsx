@@ -78,23 +78,28 @@ export default function Dashboard() {
 }, []);
  const filtered = items.filter(
   (request) => {
-    const workflowMatch =
+   const workflowMatch =
   tab === "completed"
     ? [
         "Completed",
         "Rejected",
         "Accepted",
+        "Approved",
       ].includes(
         request.status
       )
+    : tab === "moody"
+    ? request.typeTitle ===
+      "Moody Center Request"
     : tab === "apparel"
     ? request.typeSlug ===
       "frontier-apparel"
-    : request.workflow === tab &&
+    : request.workflow === "standard" &&
       ![
         "Completed",
         "Rejected",
         "Accepted",
+        "Approved",
       ].includes(
         request.status
       );
@@ -548,21 +553,22 @@ const statuses =
                             )
                           }
                         >
-                          {statuses.map(
-                            (
-                              value
-                            ) => (
-                              <option
-                                key={
-                                  value
-                                }
-                              >
-                                {
-                                  value
-                                }
-                              </option>
-                            )
-                          )}
+                          {(
+  request.typeTitle === "Moody Center Request"
+    ? moody
+    : request.typeSlug === "frontier-apparel"
+    ? apparel
+    : standard
+).map(
+  (value) => (
+    <option
+      key={value}
+      value={value}
+    >
+      {value}
+    </option>
+  )
+)}
                         </select>
                       </label>
 
