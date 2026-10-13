@@ -116,44 +116,46 @@ body.details || {}
 
   const requesterName =
     existingItem.fields?.SubmittedBy || "";
+// Update SharePoint first.
+await graphClient
+  .api(
+    `/sites/${SITE_ID}/lists/${LIST_ID}/items/${body.id}/fields`
+  )
+  .patch({
+    Status: body.status,
+    MarketingNotes:
+      body.note || "",
+  });
 
-  // Update SharePoint first.
-  await graphClient
-    .api(
-      `/sites/${SITE_ID}/lists/${LIST_ID}/items/${body.id}/fields`
-    )
-    .patch({
-      Status: body.status,
-      MarketingNotes:
-        body.note || "",
-    });
+console.log(
+  "PATCH SUCCESS:",
+  body.id,
+  body.status
+);
 
-  console.log(
-    "PATCH SUCCESS:",
-    body.id,
-    body.status
-  );
+// Only attempt an email when
+// the request has an email address.
+if (requesterEmail) {
+  const requestNumber =
+    `MKT-${new Date().getFullYear()}-${String(
+      body.id
+    ).padStart(4, "0")}`;
 
-  // Only attempt an email when the request
-  // has a requester email.
-  if (requesterEmail) {
-    const requestNumber =
-      `MKT-${new Date().getFullYear()}-${String(
-        body.id
-      ).padStart(4, "0")}`;
+  const noteText =
+    body.note
+      ? `
 
-    const noteText =
-      body.note
-        ? `\n\nUpdate from Marketing:\n${body.note}`
-        : "";
+Update from Marketing:
+${body.note}`
+      : "";
 
-    const greeting =
-      requesterName
-        ? `Hi ${requesterName},`
-        : "Hello,";
+  const greeting =
+    requesterName
+      ? `Hi ${requesterName},`
+      : "Hello,";
 
-    const emailBody =
-      `${greeting}
+  const emailBody =
+    `${greeting}
 
 Your Frontier Marketing request has been updated.
 
@@ -164,6 +166,21 @@ You can view the latest details under My Requests in the Frontier Marketing Port
 
 Thank you,
 Frontier Marketing`;
+
+  try {
+    console.log(
+      "ATTEMPTING STATUS EMAIL"
+    );
+
+    console.log(
+      "FROM:",
+      MARKETING_EMAIL
+    );
+
+    console.log(
+      "TO:",
+      requesterEmail
+    );
 
     await graphClient
       .api(
@@ -196,35 +213,57 @@ Frontier Marketing`;
       "STATUS EMAIL SENT:",
       requesterEmail
     );
+  } catch (emailError) {
+    console.error(
+      "STATUS EMAIL FAILED:",
+      emailError
+    );
+
+    console.error(
+      "EMAIL ERROR MESSAGE:",
+      emailError.message
+    );
+
+    console.error(
+      "EMAIL ERROR CODE:",
+      emailError.code
+    );
+
+    console.error(
+      "EMAIL ERROR STATUS:",
+      emailError.statusCode
+    );
   }
-
-  context.res = {
-    status: 200,
-    body: {
-      success: true,
-    },
-  };
-
-  return;
 }
-    context.res = {
-      status: 405,
-      body: {
-        message: "Method not allowed",
-        receivedMethod: method,
-      },
-    };
-  } catch (error) {
-    context.res = {
-      status: 500,
-      body: {
-        error: error.message,
-        statusCode:
-          error.statusCode || null,
-        code: error.code || null,
-        body: error.body || null,
-        stack: error.stack || null,
-      },
-    };
-  }
+
+context.res = {
+  status: 200,
+  body: {
+    success: true,
+  },
+};
+
+return;
+}
+
+context.res = {
+  status: 405,
+  body: {
+    message: "Method not allowed",
+    receivedMethod: method,
+  },
+};
+} catch (error) {
+context.res = {
+  status: 500,
+  body: {
+    error: error.message,
+    statusCode:
+      error.statusCode || null,
+    code: error.code || null,
+    body: error.body || null,
+    stack: error.stack || null,
+  },
+};
+}
 };
