@@ -9,87 +9,104 @@ const seed:MarketingRequest[]=[
 ];
 
 export async function list(): Promise<MarketingRequest[]> {
-  const response = await fetch("/api/requests");
+  const response = await fetch(
+    "/api/requests"
+  );
 
   const data = await response.json();
 
   console.log(
-  "SharePoint Fields",
-  data.value?.[0]?.fields
-);
-  return (data.value || []).map((item: any) => ({
-    id: String(item.id),
+    "SharePoint Fields",
+    data.value?.[0]?.fields
+  );
 
-    requestNumber: `MKT-${new Date().getFullYear()}-${String(
-      item.id
-    ).padStart(4, "0")}`,
+  return (data.value || [])
+    .map((item: any) => {
+      let details: Record<string, any> = {};
 
-    typeSlug: "",
-    typeTitle:
-      item.fields?.RequestType || "Other",
+      try {
+        details =
+          item.fields?.Description
+            ? JSON.parse(
+                item.fields.Description
+              )
+            : {};
+      } catch {
+        details = {};
+      }
 
-    workflow: "standard",
+      return {
+        id: String(item.id),
 
-    requesterName:
-  item.fields?.SubmittedBy ||
-  item.fields?.Description
-    ? (() => {
-        try {
-          const details =
-            JSON.parse(
-              item.fields?.Description ||
-                "{}"
-            );
+        requestNumber:
+          `MKT-${new Date().getFullYear()}-${String(
+            item.id
+          ).padStart(4, "0")}`,
 
-          return (
-            details.fullName ||
-            item.fields?.SubmittedBy ||
-            ""
-          );
-        } catch {
-          return (
-            item.fields?.SubmittedBy ||
-            ""
-          );
-        }
-      })()
-    : "",
+        typeSlug:
+          details.typeSlug || "",
 
-requesterEmail:
-  item.fields?.SubmittedEmail ||
-  item.fields?.EmployeeEmail ||
-  "",
+        typeTitle:
+          item.fields?.RequestType ||
+          "Other",
 
-    branchDepartment:
-      item.fields?.Branch || "",
+        workflow:
+          details.workflow ||
+          "standard",
 
-    dueDate:
-      item.fields?.DateNeeded || "",
+        requesterName:
+          item.fields?.SubmittedBy ||
+          details.fullName ||
+          "",
 
-    submittedAt:
-      item.createdDateTime ||
-      new Date().toISOString(),
+        requesterEmail:
+          item.fields?.SubmittedEmail ||
+          item.fields?.EmployeeEmail ||
+          details.email ||
+          "",
 
-    status:
-      item.fields?.Status ||
-      "Submitted",
+        branchDepartment:
+          item.fields?.Branch ||
+          details.branch ||
+          "",
 
-    assignedTo:
-  item.fields?.AssignedTo || "",
+        dueDate:
+          item.fields?.DateNeeded ||
+          "",
 
-details:
-  item.fields?.Description
-    ? JSON.parse(
-        item.fields.Description
-      )
-    : {},
+        submittedAt:
+          item.createdDateTime ||
+          new Date().toISOString(),
 
-submitterNote:
-  item.fields?.MarketingNotes || "",
+        status:
+          item.fields?.Status ||
+          "Submitted",
 
-privateNote: "",
+        assignedTo:
+          item.fields?.AssignedTo ||
+          "",
 
-  }));
+        details,
+
+        submitterNote:
+          item.fields?.MarketingNotes ||
+          "",
+
+        privateNote: "",
+      };
+    })
+    .sort(
+      (
+        a: MarketingRequest,
+        b: MarketingRequest
+      ) =>
+        new Date(
+          b.submittedAt
+        ).getTime() -
+        new Date(
+          a.submittedAt
+        ).getTime()
+    );
 }
 
 function save(items:MarketingRequest[]){
