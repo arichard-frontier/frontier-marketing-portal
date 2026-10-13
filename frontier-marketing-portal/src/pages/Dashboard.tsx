@@ -78,31 +78,31 @@ export default function Dashboard() {
 }, []);
  const filtered = items.filter(
   (request) => {
-   const workflowMatch =
+ const workflowMatch =
   tab === "completed"
     ? [
         "Completed",
         "Rejected",
         "Accepted",
-        "Approved",
-      ].includes(
-        request.status
-      )
+      ].includes(request.status)
+
     : tab === "moody"
-    ? request.typeTitle ===
-      "Moody Center Request"
+    ? request.typeTitle === "Moody Center Request" &&
+      ![
+        "Accepted",
+        "Rejected",
+      ].includes(request.status)
+
     : tab === "apparel"
-    ? request.typeSlug ===
-      "frontier-apparel"
-    : request.workflow === "standard" &&
+    ? request.typeTitle === "Frontier Apparel"
+
+    : request.typeTitle !== "Moody Center Request" &&
+      request.typeTitle !== "Frontier Apparel" &&
       ![
         "Completed",
         "Rejected",
         "Accepted",
-        "Approved",
-      ].includes(
-        request.status
-      );
+      ].includes(request.status);
 
     const typeMatch =
       requestTypeFilter === "All"
@@ -553,10 +553,10 @@ const statuses =
                             )
                           }
                         >
-                          {(
+                         {(
   request.typeTitle === "Moody Center Request"
     ? moody
-    : request.typeSlug === "frontier-apparel"
+    : request.typeTitle === "Frontier Apparel"
     ? apparel
     : standard
 ).map(
