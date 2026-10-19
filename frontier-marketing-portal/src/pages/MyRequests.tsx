@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 import { list } from "../services/store";
 import type { MarketingRequest } from "../types";
+import { formatDate } from "../utils/formatDate";
 
 export default function MyRequests() {
   const { accounts } = useMsal();
@@ -143,14 +144,12 @@ useEffect(() => {
                 </td>
 
                 <td>
-                  {new Date(
-                    r.submittedAt
-                  ).toLocaleDateString()}
+                  {formatDate(r.submittedAt)}
                 </td>
 
                 <td>
-                  {r.dueDate}
-                </td>
+  {formatDate(r.dueDate)}
+</td>
 
                 <td>
                   <span

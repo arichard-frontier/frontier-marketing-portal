@@ -16,6 +16,8 @@ import type {
   Status,
 } from "../types";
 
+import { formatDate } from "../utils/formatDate";
+
 const standard: Status[] = [
   "Submitted",
   "In Progress",
@@ -513,13 +515,13 @@ const statuses =
                       </p>
 
                       {request.dueDate && (
-                        <small>
-                          Due{" "}
-                          {
-                            request.dueDate
-                          }
-                        </small>
-                      )}
+  <small>
+    Due{" "}
+    {formatDate(
+      request.dueDate
+    )}
+  </small>
+)}
 
                       <div
                         style={{

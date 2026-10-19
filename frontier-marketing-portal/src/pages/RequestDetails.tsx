@@ -16,6 +16,8 @@ import type {
   MarketingRequest,
 } from "../types";
 
+import { formatDate } from "../utils/formatDate";
+
 export default function RequestDetails() {
   const { id } = useParams();
 
@@ -171,11 +173,11 @@ setLoading(false);
         </p>
 
         {request.dueDate && (
-          <p>
-            <strong>Due Date:</strong>{" "}
-            {request.dueDate}
-          </p>
-        )}
+  <p>
+    <strong>Due Date:</strong>{" "}
+    {formatDate(request.dueDate)}
+  </p>
+)}
         {request.submitterNote && (
   <div
     className="note"
