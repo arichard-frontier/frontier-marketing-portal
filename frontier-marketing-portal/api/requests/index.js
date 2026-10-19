@@ -84,7 +84,7 @@ body.requesterEmail ||
 DateNeeded:
   body.dueDate ||
   null,
-  
+
 Description:
 JSON.stringify(
 body.details || {}
@@ -116,11 +116,39 @@ body.details || {}
     )
     .get();
 
-  const requesterEmail =
-    existingItem.fields?.SubmittedEmail || "";
+ const requesterEmail =
+  existingItem.fields?.SubmittedEmail ||
+  "";
 
-  const requesterName =
-    existingItem.fields?.SubmittedBy || "";
+const requesterName =
+  existingItem.fields?.SubmittedBy ||
+  "";
+
+const requestType =
+  existingItem.fields?.RequestType ||
+  "Marketing Request";
+
+const branchDepartment =
+  existingItem.fields?.Branch ||
+  "";
+
+const dueDate =
+  existingItem.fields?.DateNeeded ||
+  "";
+
+let requestDetails = {};
+
+try {
+  requestDetails =
+    existingItem.fields?.Description
+      ? JSON.parse(
+          existingItem.fields.Description
+        )
+      : {};
+} catch {
+  requestDetails = {};
+}
+
 // Update SharePoint first.
 await graphClient
   .api(
@@ -146,31 +174,333 @@ if (requesterEmail) {
       body.id
     ).padStart(4, "0")}`;
 
-  const noteText =
-    body.note
+  const escapeHtml = (value) =>
+  String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+const formatLabel = (key) =>
+  key
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (str) =>
+      str.toUpperCase()
+    );
+
+const formatEmailDate = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  const dateOnly =
+    /^\d{4}-\d{2}-\d{2}$/.test(value);
+
+  const date = dateOnly
+    ? new Date(`${value}T12:00:00`)
+    : new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  const day = date.getDate();
+
+  const suffix =
+    day % 10 === 1 &&
+    day % 100 !== 11
+      ? "st"
+      : day % 10 === 2 &&
+        day % 100 !== 12
+      ? "nd"
+      : day % 10 === 3 &&
+        day % 100 !== 13
+      ? "rd"
+      : "th";
+
+  const weekday =
+    date.toLocaleDateString(
+      "en-US",
+      {
+        weekday: "long",
+      }
+    );
+
+  const month =
+    date.toLocaleDateString(
+      "en-US",
+      {
+        month: "long",
+      }
+    );
+
+  const year =
+    date.getFullYear();
+
+  return `${weekday}, ${month} ${day}${suffix}, ${year}`;
+};
+
+const detailRows =
+  Object.entries(requestDetails)
+    .filter(
+      ([key, value]) =>
+        value !== "" &&
+        value !== null &&
+        value !== undefined &&
+        ![
+          "fullName",
+          "email",
+          "branch",
+          "dueDate",
+        ].includes(key)
+    )
+    .map(
+      ([key, value]) => `
+        <tr>
+          <td
+            style="
+              padding: 6px 16px 6px 0;
+              font-weight: 700;
+              vertical-align: top;
+            "
+          >
+            ${escapeHtml(
+              formatLabel(key)
+            )}:
+          </td>
+
+          <td
+            style="
+              padding: 6px 0;
+              vertical-align: top;
+            "
+          >
+            ${escapeHtml(
+              Array.isArray(value)
+                ? value.join(", ")
+                : value
+            )}
+          </td>
+        </tr>
+      `
+    )
+    .join("");
+
+const greeting =
+  requesterName
+    ? `Hi ${escapeHtml(requesterName)},`
+    : "Hello,";
+
+const emailBody = `
+<div
+  style="
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: #222222;
+    line-height: 1.55;
+    max-width: 700px;
+  "
+>
+  <p>${greeting}</p>
+
+  <p>
+    Your Frontier Marketing request
+    has been updated.
+  </p>
+
+  <div
+    style="
+      background: #f5f3ee;
+      border-left: 4px solid #a51e2d;
+      padding: 14px 18px;
+      margin: 18px 0 24px 0;
+    "
+  >
+    <div>
+      <strong>
+        Request:
+        ${escapeHtml(requestNumber)}
+      </strong>
+    </div>
+
+    <div>
+      <strong>
+        Status:
+        ${escapeHtml(body.status)}
+      </strong>
+    </div>
+
+    ${
+      body.note
+        ? `
+          <div style="margin-top: 6px;">
+            <strong>
+              Update from Marketing:
+              ${escapeHtml(body.note)}
+            </strong>
+          </div>
+        `
+        : ""
+    }
+  </div>
+
+  <h3
+    style="
+      color: #1f3636;
+      margin-bottom: 8px;
+    "
+  >
+    Request Details
+  </h3>
+
+  <table
+    role="presentation"
+    cellpadding="0"
+    cellspacing="0"
+    style="
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    "
+  >
+    <tr>
+      <td
+        style="
+          padding: 6px 16px 6px 0;
+          font-weight: 700;
+          vertical-align: top;
+        "
+      >
+        Request Type:
+      </td>
+
+      <td style="padding: 6px 0;">
+        ${escapeHtml(requestType)}
+      </td>
+    </tr>
+
+    <tr>
+      <td
+        style="
+          padding: 6px 16px 6px 0;
+          font-weight: 700;
+          vertical-align: top;
+        "
+      >
+        Requester:
+      </td>
+
+      <td style="padding: 6px 0;">
+        ${escapeHtml(requesterName)}
+      </td>
+    </tr>
+
+    <tr>
+      <td
+        style="
+          padding: 6px 16px 6px 0;
+          font-weight: 700;
+          vertical-align: top;
+        "
+      >
+        Email:
+      </td>
+
+      <td style="padding: 6px 0;">
+        ${escapeHtml(requesterEmail)}
+      </td>
+    </tr>
+
+    ${
+      branchDepartment
+        ? `
+          <tr>
+            <td
+              style="
+                padding: 6px 16px 6px 0;
+                font-weight: 700;
+                vertical-align: top;
+              "
+            >
+              Branch:
+            </td>
+
+            <td style="padding: 6px 0;">
+              ${escapeHtml(
+                branchDepartment
+              )}
+            </td>
+          </tr>
+        `
+        : ""
+    }
+
+    ${
+      dueDate
+        ? `
+          <tr>
+            <td
+              style="
+                padding: 6px 16px 6px 0;
+                font-weight: 700;
+                vertical-align: top;
+              "
+            >
+              Due Date:
+            </td>
+
+            <td style="padding: 6px 0;">
+              ${escapeHtml(
+                formatEmailDate(
+                  dueDate
+                )
+              )}
+            </td>
+          </tr>
+        `
+        : ""
+    }
+  </table>
+
+  ${
+    detailRows
       ? `
+        <h3
+          style="
+            color: #1f3636;
+            margin-bottom: 8px;
+          "
+        >
+          Form Details
+        </h3>
 
-Update from Marketing:
-${body.note}`
-      : "";
+        <table
+          role="presentation"
+          cellpadding="0"
+          cellspacing="0"
+          style="
+            border-collapse: collapse;
+            margin-bottom: 20px;
+          "
+        >
+          ${detailRows}
+        </table>
+      `
+      : ""
+  }
 
-  const greeting =
-    requesterName
-      ? `Hi ${requesterName},`
-      : "Hello,";
+  <p>
+    You can view the latest details
+    under <strong>My Requests</strong>
+    in the Frontier Marketing Portal.
+  </p>
 
-  const emailBody =
-    `${greeting}
-
-Your Frontier Marketing request has been updated.
-
-Request: ${requestNumber}
-Status: ${body.status}${noteText}
-
-You can view the latest details under My Requests in the Frontier Marketing Portal.
-
-Thank you,
-Frontier Marketing`;
+  <p>
+    Thank you,<br />
+    Frontier Marketing
+  </p>
+</div>
+`;
 
   try {
     console.log(
@@ -197,9 +527,9 @@ Frontier Marketing`;
             `Marketing Request ${requestNumber} Updated`,
 
           body: {
-            contentType: "Text",
-            content: emailBody,
-          },
+  contentType: "HTML",
+  content: emailBody,
+},
 
           toRecipients: [
             {
