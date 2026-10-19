@@ -107,6 +107,9 @@ useEffect(() => {
                 <td>
                   <Link
   to={`/requests/${r.id}`}
+  state={{
+    from: "my-requests",
+  }}
   style={{
     display: "inline-flex",
     alignItems: "center",

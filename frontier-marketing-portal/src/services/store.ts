@@ -71,8 +71,10 @@ export async function list(): Promise<MarketingRequest[]> {
           "",
 
         dueDate:
-          item.fields?.DateNeeded ||
-          "",
+  item.fields?.DateNeeded ||
+  details.dateNeeded ||
+  details.dueDate ||
+  "",
 
         submittedAt:
   item.createdDateTime ||

@@ -5,6 +5,8 @@ import {
 
 import {
   Link,
+  useLocation,
+  useNavigate,
   useParams,
 } from "react-router-dom";
 
@@ -16,6 +18,13 @@ import type {
 
 export default function RequestDetails() {
   const { id } = useParams();
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const cameFromDashboard =
+    location.state?.from ===
+    "dashboard";
 
   const [request, setRequest] =
     useState<MarketingRequest | null>(null);
@@ -67,12 +76,23 @@ setLoading(false);
   if (!request) {
     return (
       <div className="page">
-        <Link
-          to="/my-requests"
-          className="back"
-        >
-          ← Back to My Requests
-        </Link>
+        <button
+  type="button"
+  className="back"
+  onClick={() => navigate(-1)}
+  style={{
+    border: "none",
+    background: "none",
+    padding: 0,
+    cursor: "pointer",
+    font: "inherit",
+  }}
+>
+  {cameFromDashboard
+    ? "← Back to Dashboard"
+    : "← Back to My Requests"}
+</button>
+
 
         <div className="formCard">
           <h1>Request Not Found</h1>
@@ -83,12 +103,20 @@ setLoading(false);
 
   return (
     <div className="page">
-      <Link
-        to="/my-requests"
-        className="back"
-      >
-        ← Back to My Requests
-      </Link>
+     <button
+  type="button"
+  className="back"
+  onClick={() => navigate(-1)}
+  style={{
+    border: "none",
+    background: "none",
+    padding: 0,
+    cursor: "pointer",
+    font: "inherit",
+  }}
+>
+  ← Back
+</button>
 
       <div className="formCard">
         <div className="formHead">

@@ -80,6 +80,11 @@ SubmittedEmail:
 body.requesterEmail ||
 "",
  
+
+DateNeeded:
+  body.dueDate ||
+  null,
+  
 Description:
 JSON.stringify(
 body.details || {}

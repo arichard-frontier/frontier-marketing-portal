@@ -446,12 +446,14 @@ const statuses =
                     >
                       <p className="cardNo">
                         <Link
-                          to={`/requests/${request.id}`}
-                        >
-                          {
-                            request.requestNumber
-                          }
-                        </Link>
+  to={`/requests/${request.id}`}
+  state={{
+    from: "dashboard",
+    tab,
+  }}
+>
+  {request.requestNumber}
+</Link>
                       </p>
 
                       <h3>
@@ -528,11 +530,14 @@ const statuses =
                         }}
                       >
                         <Link
-                          to={`/requests/${request.id}`}
-                        >
-                          View
-                          Request
-                        </Link>
+  to={`/requests/${request.id}`}
+  state={{
+    from: "dashboard",
+    tab,
+  }}
+>
+  View Request
+</Link>
                       </div>
 
                       <label>
