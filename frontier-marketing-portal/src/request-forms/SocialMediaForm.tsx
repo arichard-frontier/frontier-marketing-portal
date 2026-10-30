@@ -238,6 +238,7 @@ export default function SocialMediaForm() {
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -254,6 +255,7 @@ export default function SocialMediaForm() {
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
