@@ -45,8 +45,70 @@ export default function SocialMediaForm() {
   const [photosAvailable, setPhotosAvailable] =
     useState("Yes");
 
-    const [photoLocation, setPhotoLocation] =
+  const [photoFiles, setPhotoFiles] =
+  useState<File[]>([]);
+
+const [uploadError, setUploadError] =
   useState("");
+
+  const handlePhotoSelection = (
+  e: React.ChangeEvent<HTMLInputElement>
+) => {
+  const selectedFiles = Array.from(
+    e.target.files || []
+  );
+
+  setUploadError("");
+
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/heic",
+    "image/heif",
+  ];
+
+  const invalidType =
+    selectedFiles.find(
+      (file) =>
+        !allowedTypes.includes(file.type)
+    );
+
+  if (invalidType) {
+    setUploadError(
+      "Only JPG, JPEG, PNG, WEBP, HEIC, and HEIF photos are allowed."
+    );
+
+    e.target.value = "";
+    return;
+  }
+
+  const maxFileSize =
+    10 * 1024 * 1024;
+
+  const oversizedFile =
+    selectedFiles.find(
+      (file) =>
+        file.size > maxFileSize
+    );
+
+  if (oversizedFile) {
+    setUploadError(
+      `${oversizedFile.name} is larger than 10 MB. Please choose a smaller photo.`
+    );
+
+    e.target.value = "";
+    return;
+  }
+
+  setPhotoFiles((current) => [
+    ...current,
+    ...selectedFiles,
+  ]);
+
+  e.target.value = "";
+};
+
 
   const [eventDate, setEventDate] =
     useState("");
@@ -57,13 +119,26 @@ export default function SocialMediaForm() {
   const [additionalNotes, setAdditionalNotes] =
     useState("");
 
-  const handleSubmit = async (
-    e: FormEvent<HTMLFormElement>
-  ) => {
-    e.preventDefault();
+ const handleSubmit = async (
+  e: FormEvent<HTMLFormElement>
+) => {
+  e.preventDefault();
 
-   const request = await create({
+  setUploadError("");
 
+  if (
+    photosAvailable === "Yes" &&
+    photoFiles.length === 0
+  ) {
+    setUploadError(
+      "Please upload at least one photo or select No for photos available."
+    );
+
+    return;
+  }
+
+  try {
+    const request = await create({
       typeSlug: "social-media",
       typeTitle: "Social Media",
       workflow: "standard",
@@ -85,7 +160,6 @@ export default function SocialMediaForm() {
         postGoal,
         importantDetails,
         photosAvailable,
-        photoLocation,
         eventDate,
         requestedPostDate,
         additionalNotes,
@@ -95,10 +169,63 @@ export default function SocialMediaForm() {
       privateNote: "",
     });
 
+    if (
+      photosAvailable === "Yes" &&
+      photoFiles.length > 0
+    ) {
+      for (const file of photoFiles) {
+        const uploadResponse =
+          await fetch(
+            "/api/uploads",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  file.type ||
+                  "application/octet-stream",
+
+                "x-request-number":
+                  request.requestNumber,
+
+                "x-file-name":
+                  encodeURIComponent(
+                    file.name
+                  ),
+              },
+
+              body: file,
+            }
+          );
+
+        const uploadResult =
+          await uploadResponse.json();
+
+        if (!uploadResponse.ok) {
+          throw new Error(
+            uploadResult.error ||
+              `Unable to upload ${file.name}.`
+          );
+        }
+      }
+    }
+
     navigate(
-  `/success/${request.requestNumber}`
-);
-  };
+      `/success/${request.requestNumber}`
+    );
+  } catch (error) {
+    console.error(
+      "SOCIAL MEDIA SUBMISSION FAILED:",
+      error
+    );
+
+    setUploadError(
+      error instanceof Error
+        ? error.message
+        : "The request or photo upload failed."
+    );
+  }
+};
 
   return (
     <div className="page">
@@ -263,21 +390,93 @@ export default function SocialMediaForm() {
             Do You Have Photos Available?
 
 {photosAvailable === "Yes" && (
-  <label>
-    Where Are The Photos Saved?
+  <div
+    style={{
+      marginTop: "16px",
+      marginBottom: "20px",
+    }}
+  >
+    <label>
+      Upload Photos
 
-    <input
-      type="text"
-      placeholder="Shared Drive folder path, do not email photos"
-      value={photoLocation}
-      onChange={(e) =>
-        setPhotoLocation(
-          e.target.value
-        )
-      }
-      required
-    />
-  </label>
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif"
+        multiple
+        onChange={
+          handlePhotoSelection
+        }
+        style={{
+          display: "block",
+          marginTop: "8px",
+        }}
+      />
+    </label>
+
+    <small>
+      JPG, PNG, WEBP, HEIC, or HEIF.
+      Maximum 10 MB per photo.
+    </small>
+
+    {uploadError && (
+      <p
+        style={{
+          color: "#c62828",
+          fontWeight: 600,
+        }}
+      >
+        {uploadError}
+      </p>
+    )}
+
+    {photoFiles.length > 0 && (
+      <div
+        style={{
+          marginTop: "14px",
+        }}
+      >
+        <strong>
+          Selected Photos
+        </strong>
+
+        {photoFiles.map(
+          (file, index) => (
+            <div
+              key={`${file.name}-${index}`}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent:
+                  "space-between",
+                gap: "12px",
+                marginTop: "8px",
+                padding: "8px",
+                background: "#f5f3ee",
+                borderRadius: "6px",
+              }}
+            >
+              <span>{file.name}</span>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setPhotoFiles(
+                    (current) =>
+                      current.filter(
+                        (_, i) =>
+                          i !== index
+                      )
+                  )
+                }
+              >
+                Remove
+              </button>
+            </div>
+          )
+        )}
+      </div>
+    )}
+  </div>
 )}
             <select
               value={
