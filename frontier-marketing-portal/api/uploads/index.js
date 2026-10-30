@@ -110,11 +110,47 @@ const originalFileName =
       return;
     }
 
-    const fileBuffer =
-      Buffer.isBuffer(req.body)
-        ? req.body
-        : Buffer.from(req.body || []);
+   let fileBuffer;
 
+if (Buffer.isBuffer(req.body)) {
+  fileBuffer = req.body;
+} else if (
+  req.rawBody &&
+  Buffer.isBuffer(req.rawBody)
+) {
+  fileBuffer = req.rawBody;
+} else if (
+  typeof req.rawBody === "string"
+) {
+  fileBuffer = Buffer.from(
+    req.rawBody,
+    "binary"
+  );
+} else if (
+  typeof req.body === "string"
+) {
+  fileBuffer = Buffer.from(
+    req.body,
+    "binary"
+  );
+} else {
+  fileBuffer = Buffer.alloc(0);
+}
+
+console.log(
+  "UPLOAD FILE:",
+  originalFileName
+);
+
+console.log(
+  "UPLOAD CONTENT TYPE:",
+  contentType
+);
+
+console.log(
+  "UPLOAD SIZE:",
+  fileBuffer.length
+);
     const maxFileSize =
       10 * 1024 * 1024;
 
