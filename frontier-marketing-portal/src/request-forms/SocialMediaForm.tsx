@@ -174,29 +174,32 @@ const [uploadError, setUploadError] =
       photoFiles.length > 0
     ) {
       for (const file of photoFiles) {
-        const uploadResponse =
-          await fetch(
-            "/api/uploads",
-            {
-              method: "POST",
+       const uploadResponse =
+  await fetch(
+    "/api/uploads",
+    {
+      method: "POST",
 
-              headers: {
-                "Content-Type":
-                  file.type ||
-                  "application/octet-stream",
+      headers: {
+        "Content-Type":
+          file.type ||
+          "application/octet-stream",
 
-                "x-request-number":
-                  request.requestNumber,
+        "x-request-number":
+          request.requestNumber,
 
-                "x-file-name":
-                  encodeURIComponent(
-                    file.name
-                  ),
-              },
+        "x-file-name":
+          encodeURIComponent(
+            file.name
+          ),
 
-              body: file,
-            }
-          );
+        "x-upload-category":
+          "social-media",
+      },
+
+      body: file,
+    }
+  );
 
         const uploadResult =
           await uploadResponse.json();

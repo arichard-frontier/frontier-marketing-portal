@@ -13,6 +13,20 @@ const {
 const UPLOAD_DRIVE_ID =
   "b!vzGBynwIjEio87AfpEpKCrlrS0VCQLFFtsE-qddUu1Q5DAU3No82RIWWrLQjVS0a";
 
+const CATEGORY_FOLDERS = {
+  "social-media":
+    "01GMXASG2SSOWEANPWIZG3HAYYE7RFXP3R",
+
+  "business-cards":
+    "01GMXASG5TICERJAT2NZDISXHQTCQHW5OL",
+
+  "advertisement":
+    "01GMXASG7DHPKVB2AGPVGYBKLMU6O3FSUU",
+
+  "marketing-materials":
+    "01GMXASG557L76DB234BAIP4FL2PZR5FAS",
+};
+
 async function getGraphClient() {
   const credential =
     new ClientSecretCredential(
@@ -25,7 +39,6 @@ async function getGraphClient() {
     await credential.getToken(
       "https://graph.microsoft.com/.default"
     );
-
   return Client.init({
     authProvider: (done) => {
       done(null, token.token);
@@ -63,6 +76,27 @@ const originalFileName =
     const contentType =
       req.headers["content-type"] ||
       "application/octet-stream";
+
+      const uploadCategory =
+  req.headers["x-upload-category"] ||
+  "social-media";
+
+const categoryFolderId =
+  CATEGORY_FOLDERS[
+    uploadCategory
+  ];
+
+if (!categoryFolderId) {
+  context.res = {
+    status: 400,
+    body: {
+      error:
+        "The upload category is invalid.",
+    },
+  };
+
+  return;
+}
 
     if (!requestNumber) {
       context.res = {
@@ -183,11 +217,11 @@ let requestFolder;
 
 try {
   requestFolder =
-    await graphClient
-      .api(
-        `/drives/${UPLOAD_DRIVE_ID}/root:/${safeRequestNumber}`
-      )
-      .get();
+  await graphClient
+    .api(
+      `/drives/${UPLOAD_DRIVE_ID}/items/${categoryFolderId}:/${safeRequestNumber}`
+    )
+    .get();
 } catch (folderLookupError) {
   if (
     folderLookupError.statusCode !== 404
@@ -196,11 +230,11 @@ try {
   }
 
   requestFolder =
-    await graphClient
-      .api(
-        `/drives/${UPLOAD_DRIVE_ID}/root/children`
-      )
-      .post({
+  await graphClient
+    .api(
+      `/drives/${UPLOAD_DRIVE_ID}/items/${categoryFolderId}/children`
+    )
+    .post({
         name:
           safeRequestNumber,
 
