@@ -4,7 +4,10 @@ import {
   useState,
 } from "react";
 
-import { Link } from "react-router-dom";
+import {
+  Link,
+  useSearchParams,
+} from "react-router-dom";
 
 import {
   list,
@@ -38,17 +41,49 @@ const apparel: Status[] = [
   "Submitted",
   "On Order List",
   "Ordered",
+  "Rejected",
 ];
 export default function Dashboard() {
   const [items, setItems] =
   useState<MarketingRequest[]>([]);
 
- const [tab, setTab] = useState<
+const [searchParams, setSearchParams] =
+  useSearchParams();
+
+const savedTab =
+  searchParams.get("tab");
+
+const initialTab:
+  | "standard"
+  | "moody"
+  | "apparel"
+  | "completed" =
+  savedTab === "moody" ||
+  savedTab === "apparel" ||
+  savedTab === "completed"
+    ? savedTab
+    : "standard";
+
+const [tab, setTabState] = useState<
   "standard" |
   "moody" |
   "apparel" |
   "completed"
->("standard");
+>(initialTab);
+
+const setTab = (
+  newTab:
+    | "standard"
+    | "moody"
+    | "apparel"
+    | "completed"
+) => {
+  setTabState(newTab);
+
+  setSearchParams({
+    tab: newTab,
+  });
+};
   const [requestTypeFilter, setRequestTypeFilter] =
   useState("All");
   const [searchTerm, setSearchTerm] =
@@ -452,6 +487,8 @@ const statuses =
   state={{
     from: "dashboard",
     tab,
+    returnTo:
+      `/marketing?tab=${tab}`,
   }}
 >
   {request.requestNumber}
@@ -471,17 +508,26 @@ const statuses =
                           }
                         </strong>
                       </p>
-{request.typeSlug === "moody-center" && (
+{request.typeTitle === "Moody Center Request" && (
   <>
     <p>
       <strong>Event:</strong>{" "}
-      {request.details?.eventName}
+      {request.details?.eventName ||
+        "Not provided"}
     </p>
 
     <p>
-      <strong>Tickets:</strong>{" "}
-      {request.details?.ticketQuantity}
+      <strong>Tickets Requested:</strong>{" "}
+      {request.details?.ticketQuantity ||
+        "Not provided"}
     </p>
+
+    {request.details?.requestType && (
+      <p>
+        <strong>Request Type:</strong>{" "}
+        {request.details.requestType}
+      </p>
+    )}
   </>
 )}
 {request.typeSlug === "frontier-apparel" && (
@@ -531,11 +577,13 @@ const statuses =
                             "10px",
                         }}
                       >
-                        <Link
+                      <Link
   to={`/requests/${request.id}`}
   state={{
     from: "dashboard",
     tab,
+    returnTo:
+      `/marketing?tab=${tab}`,
   }}
 >
   View Request

@@ -80,18 +80,19 @@ branchDepartment: branch,
       assignedTo: "",
 
       details: {
-        fullName,
-        email,
-        branch,
-        printed,
-        quantity,
-        materialType,
-        audience,
-        keyMessage,
-        contentToInclude,
-        fileFormat,
-        additionalNotes,
-      },
+  fullName,
+  email,
+  branch,
+  printed,
+  quantity,
+  materialType,
+  audience,
+  keyMessage,
+  contentToInclude,
+  fileFormat,
+  dueDate,
+  additionalNotes,
+},
 
       submitterNote: "",
       privateNote: "",
@@ -144,6 +145,7 @@ branchDepartment: branch,
     onChange={(e) =>
       setFullName(e.target.value)
     }
+    required
   />
 </label>
 
@@ -156,6 +158,7 @@ branchDepartment: branch,
     onChange={(e) =>
       setEmail(e.target.value)
     }
+    required
   />
 </label>
 
@@ -281,6 +284,7 @@ branchDepartment: branch,
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -295,6 +299,7 @@ branchDepartment: branch,
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -311,6 +316,7 @@ branchDepartment: branch,
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -380,6 +386,7 @@ branchDepartment: branch,
           e.target.value
         )
       }
+      required
     />
   </label>
 )}
@@ -395,6 +402,7 @@ branchDepartment: branch,
                   e.target.value
                 )
               }
+              required
             />
           </label>
 

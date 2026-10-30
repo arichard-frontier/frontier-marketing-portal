@@ -36,6 +36,9 @@ export default function SponsorshipForm() {
   const [title, setTitle] =
     useState("");
 
+    const [organizationName, setOrganizationName] =
+  useState("");
+
   const [eventName, setEventName] =
     useState("");
 
@@ -102,6 +105,7 @@ const handleSubmit = async (
         email,
         branch,
         title,
+        organizationName,
         eventName,
         eventDate,
         sponsorshipCost,
@@ -245,7 +249,19 @@ const handleSubmit = async (
               }
             />
           </label>
+<label>
+  Organization Name
 
+  <input
+    type="text"
+    value={organizationName}
+    onChange={(e) =>
+      setOrganizationName(
+        e.target.value
+      )
+    }
+  />
+</label>
           <label>
             Event Name
 
@@ -257,6 +273,7 @@ const handleSubmit = async (
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -271,6 +288,7 @@ const handleSubmit = async (
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -286,6 +304,7 @@ const handleSubmit = async (
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -301,6 +320,7 @@ const handleSubmit = async (
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -316,6 +336,7 @@ const handleSubmit = async (
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -331,6 +352,7 @@ const handleSubmit = async (
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -346,6 +368,7 @@ const handleSubmit = async (
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -361,6 +384,7 @@ const handleSubmit = async (
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -376,6 +400,7 @@ const handleSubmit = async (
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -391,6 +416,7 @@ const handleSubmit = async (
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -406,6 +432,7 @@ const handleSubmit = async (
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -421,6 +448,7 @@ const handleSubmit = async (
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -436,6 +464,7 @@ const handleSubmit = async (
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -451,6 +480,7 @@ const handleSubmit = async (
                   e.target.value
                 )
               }
+              required
             />
           </label>
 

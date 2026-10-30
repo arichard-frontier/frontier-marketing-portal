@@ -28,6 +28,9 @@ export default function RequestDetails() {
     location.state?.from ===
     "dashboard";
 
+    const returnTo =
+  location.state?.returnTo;
+
   const [request, setRequest] =
     useState<MarketingRequest | null>(null);
 
@@ -81,7 +84,13 @@ setLoading(false);
         <button
   type="button"
   className="back"
-  onClick={() => navigate(-1)}
+  onClick={() => {
+  if (returnTo) {
+    navigate(returnTo);
+  } else {
+    navigate(-1);
+  }
+}}
   style={{
     border: "none",
     background: "none",

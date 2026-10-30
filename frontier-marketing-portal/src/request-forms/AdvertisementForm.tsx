@@ -171,6 +171,7 @@ navigate(
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -215,7 +216,9 @@ navigate(
       setEmail(
         e.target.value
       )
+  
     }
+    required
   />
 </label>
 
@@ -231,6 +234,7 @@ navigate(
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -245,6 +249,7 @@ navigate(
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -287,6 +292,7 @@ navigate(
       setAdSize(e.target.value)
     }
     placeholder='Example: 8.5" x 11" or 1080 x 1080 px'
+    required
   />
 </label>
 
@@ -303,6 +309,7 @@ navigate(
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -318,6 +325,7 @@ navigate(
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -333,6 +341,7 @@ navigate(
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -348,6 +357,7 @@ navigate(
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -363,6 +373,7 @@ navigate(
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -378,6 +389,7 @@ navigate(
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
@@ -393,6 +405,7 @@ navigate(
                   e.target.value
                 )
               }
+              required
             />
           </label>
 
