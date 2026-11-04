@@ -66,11 +66,52 @@ module.exports = async function (
     const graphClient =
       await getGraphClient();
 
-  const body =
-  req.body || {};
+let body = {};
+
+try {
+  if (
+    typeof req.body === "string"
+  ) {
+    body =
+      JSON.parse(req.body);
+  } else if (req.body) {
+    body =
+      req.body;
+  }
+} catch (parseError) {
+  console.error(
+    "UPLOAD BODY PARSE FAILED:",
+    parseError
+  );
+
+  context.res = {
+    status: 400,
+    body: {
+      error:
+        "Unable to read upload information.",
+    },
+  };
+
+  return;
+}
+
+console.log(
+  "UPLOAD REQUEST NUMBER:",
+  body.requestNumber
+);
+
+console.log(
+  "UPLOAD CATEGORY:",
+  body.uploadCategory
+);
+
+console.log(
+  "UPLOAD FILE NAME:",
+  body.fileName
+);
 
 const requestNumber =
-  body.requestNumber;
+  body.requestNumber || "";
 
 const requestId =
   body.requestId || "";
