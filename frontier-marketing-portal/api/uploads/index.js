@@ -135,6 +135,28 @@ const categoryFolderId =
     uploadCategory
   ];
 
+  const imageTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+];
+
+const isSocialMedia =
+  uploadCategory ===
+  "social-media";
+
+const isProofCategory =
+  [
+    "business-cards",
+    "advertisement",
+    "marketing-materials",
+  ].includes(
+    uploadCategory
+  );
+
+
 if (!categoryFolderId) {
   context.res = {
     status: 400,
@@ -177,6 +199,67 @@ if (!body.fileData) {
     body: {
       error:
         "File data is required.",
+    },
+  };
+
+  return;
+}
+
+if (
+  isSocialMedia &&
+  !imageTypes.includes(contentType)
+) {
+  context.res = {
+    status: 400,
+    body: {
+      error:
+        "Social Media uploads must be JPG, JPEG, PNG, WEBP, HEIC, or HEIF images.",
+    },
+  };
+
+  return;
+}
+
+if (
+  isProofCategory &&
+  contentType !==
+    "application/pdf"
+) {
+  context.res = {
+    status: 400,
+    body: {
+      error:
+        "Marketing proofs must be PDF files.",
+    },
+  };
+
+  return;
+}
+
+if (
+  isProofCategory &&
+  !proofVersion
+) {
+  context.res = {
+    status: 400,
+    body: {
+      error:
+        "Proof version is required.",
+    },
+  };
+
+  return;
+}
+
+if (
+  isProofCategory &&
+  !requestId
+) {
+  context.res = {
+    status: 400,
+    body: {
+      error:
+        "Request ID is required for proof uploads.",
     },
   };
 
