@@ -95,11 +95,41 @@ status:
 
         details,
 
-        submitterNote:
-          item.fields?.MarketingNotes ||
-          "",
+       submitterNote:
+  item.fields?.MarketingNotes ||
+  "",
 
-        privateNote: "",
+privateNote: "",
+
+proofStatus:
+  item.fields?.ProofStatus ||
+  "No Proof",
+
+proofFileName:
+  item.fields?.ProofFileName ||
+  "",
+
+proofUrl:
+  item.fields?.ProofUrl ||
+  "",
+
+proofFeedback:
+  item.fields?.ProofFeedback ||
+  "",
+
+proofVersion:
+  Number(
+    item.fields?.ProofVersion ||
+    0
+  ),
+
+proofUploadedAt:
+  item.fields?.ProofUploadedAt ||
+  "",
+
+proofReviewedAt:
+  item.fields?.ProofReviewedAt ||
+  "",
       };
     })
     .sort(

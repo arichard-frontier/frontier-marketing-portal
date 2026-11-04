@@ -3,6 +3,8 @@ import {
   useState,
 } from "react";
 
+import { useMsal } from "@azure/msal-react";
+
 import {
   Link,
   useLocation,
@@ -36,6 +38,17 @@ export default function RequestDetails() {
 
   const [loading, setLoading] =
     useState(true);
+
+    const { accounts } = useMsal();
+
+const [proofFile, setProofFile] =
+  useState<File | null>(null);
+
+const [proofError, setProofError] =
+  useState("");
+
+const [uploadingProof, setUploadingProof] =
+  useState(false);
 
   useEffect(() => {
     const loadRequest = async () => {

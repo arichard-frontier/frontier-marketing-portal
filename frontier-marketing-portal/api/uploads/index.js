@@ -13,6 +13,12 @@ const {
 const UPLOAD_DRIVE_ID =
   "b!vzGBynwIjEio87AfpEpKCrlrS0VCQLFFtsE-qddUu1Q5DAU3No82RIWWrLQjVS0a";
 
+  const SITE_ID =
+  "frontierbankoftexas.sharepoint.com,ca8131bf-087c-488c-a8f3-b01fa44a4a0a,454b6bb9-4042-45b1-b6c1-3ea9d754bb54";
+
+const REQUEST_LIST_ID =
+  "93129ad2-c170-4f4e-b79c-d989748a8b13";
+
 const CATEGORY_FOLDERS = {
   "social-media":
     "01GMXASG2SSOWEANPWIZG3HAYYE7RFXP3R",
@@ -60,26 +66,28 @@ module.exports = async function (
     const graphClient =
       await getGraphClient();
 
-    const requestNumber =
-      req.headers["x-request-number"];
+  const body =
+  req.body || {};
 
-    const encodedFileName =
-  req.headers["x-file-name"];
+const requestNumber =
+  body.requestNumber;
+
+const requestId =
+  body.requestId || "";
 
 const originalFileName =
-  encodedFileName
-    ? decodeURIComponent(
-        encodedFileName
-      )
-    : "";
+  body.fileName || "";
 
-    const contentType =
-      req.headers["content-type"] ||
-      "application/octet-stream";
+const contentType =
+  body.fileType ||
+  "application/octet-stream";
 
-      const uploadCategory =
-  req.headers["x-upload-category"] ||
+const uploadCategory =
+  body.uploadCategory ||
   "social-media";
+
+const proofVersion =
+  body.proofVersion || "";
 
 const categoryFolderId =
   CATEGORY_FOLDERS[
@@ -98,53 +106,47 @@ if (!categoryFolderId) {
   return;
 }
 
-    if (!requestNumber) {
-      context.res = {
-        status: 400,
-        body: {
-          error:
-            "Request number is required.",
-        },
-      };
+if (!requestNumber) {
+  context.res = {
+    status: 400,
+    body: {
+      error:
+        "Request number is required.",
+    },
+  };
 
-      return;
-    }
+  return;
+}
 
-    if (!originalFileName) {
-      context.res = {
-        status: 400,
-        body: {
-          error:
-            "File name is required.",
-        },
-      };
+if (!originalFileName) {
+  context.res = {
+    status: 400,
+    body: {
+      error:
+        "File name is required.",
+    },
+  };
 
-      return;
-    }
+  return;
+}
 
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-      "image/heic",
-      "image/heif",
-    ];
+if (!body.fileData) {
+  context.res = {
+    status: 400,
+    body: {
+      error:
+        "File data is required.",
+    },
+  };
 
-    if (
-      !allowedTypes.includes(contentType)
-    ) {
-      context.res = {
-        status: 400,
-        body: {
-          error:
-            "Only JPG, JPEG, PNG, WEBP, HEIC, and HEIF images are allowed.",
-        },
-      };
+  return;
+}
 
-      return;
-    }
-
-   let fileBuffer;
+const fileBuffer =
+  Buffer.from(
+    body.fileData,
+    "base64"
+  );
 
 if (Buffer.isBuffer(req.body)) {
   fileBuffer = req.body;
@@ -245,16 +247,62 @@ try {
       });
 }
 
+const finalFileName =
+  isProofCategory
+    ? `${safeRequestNumber}-Proof-${proofVersion}.pdf`
+    : `${Date.now()}-${safeFileName}`;
+
 const uploadedFile =
   await graphClient
     .api(
-      `/drives/${UPLOAD_DRIVE_ID}/items/${requestFolder.id}:/${Date.now()}-${safeFileName}:/content`
+      `/drives/${UPLOAD_DRIVE_ID}/items/${requestFolder.id}:/${finalFileName}:/content`
     )
     .header(
       "Content-Type",
       contentType
     )
     .put(fileBuffer);
+
+if (isProofCategory) {
+  const uploadedAt =
+    new Date().toISOString();
+
+  await graphClient
+    .api(
+      `/sites/${SITE_ID}/lists/${REQUEST_LIST_ID}/items/${requestId}/fields`
+    )
+    .patch({
+      Status:
+        "Waiting Approval",
+
+      ProofStatus:
+        "Waiting Approval",
+
+      ProofFileName:
+        uploadedFile.name,
+
+      ProofUrl:
+        uploadedFile.webUrl,
+
+      ProofVersion:
+        Number(proofVersion),
+
+      ProofUploadedAt:
+        uploadedAt,
+
+      ProofFeedback:
+        "",
+
+      ProofReviewedAt:
+        null,
+    });
+
+  console.log(
+    "PROOF SENT FOR APPROVAL:",
+    requestId,
+    uploadedFile.name
+  );
+}
 
     context.res = {
       status: 200,

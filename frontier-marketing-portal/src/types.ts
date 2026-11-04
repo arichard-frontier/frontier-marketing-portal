@@ -48,5 +48,13 @@ updatedAt?: string;
   details: Record<string, string>;
 
   submitterNote: string;
-  privateNote: string;
+privateNote: string;
+
+proofStatus?: string;
+proofFileName?: string;
+proofUrl?: string;
+proofFeedback?: string;
+proofVersion?: number;
+proofUploadedAt?: string;
+proofReviewedAt?: string;
 }

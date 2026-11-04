@@ -174,32 +174,63 @@ const [uploadError, setUploadError] =
       photoFiles.length > 0
     ) {
       for (const file of photoFiles) {
-       const uploadResponse =
-  await fetch(
-    "/api/uploads",
-    {
-      method: "POST",
+  const fileData =
+    await new Promise<string>(
+      (resolve, reject) => {
+        const reader =
+          new FileReader();
 
-      headers: {
-        "Content-Type":
-          file.type ||
-          "application/octet-stream",
+        reader.onload = () => {
+          const result =
+            String(reader.result || "");
 
-        "x-request-number":
-          request.requestNumber,
+          const base64 =
+            result.includes(",")
+              ? result.split(",")[1]
+              : result;
 
-        "x-file-name":
-          encodeURIComponent(
-            file.name
-          ),
+          resolve(base64);
+        };
 
-        "x-upload-category":
-          "social-media",
-      },
+        reader.onerror = () =>
+          reject(
+            new Error(
+              `Unable to read ${file.name}.`
+            )
+          );
 
-      body: file,
-    }
-  );
+        reader.readAsDataURL(file);
+      }
+    );
+
+  const uploadResponse =
+    await fetch(
+      "/api/uploads",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body: JSON.stringify({
+          requestNumber:
+            request.requestNumber,
+
+          fileName:
+            file.name,
+
+          fileType:
+            file.type,
+
+          uploadCategory:
+            "social-media",
+
+          fileData,
+        }),
+      }
+    );
 
         const uploadResult =
           await uploadResponse.json();
