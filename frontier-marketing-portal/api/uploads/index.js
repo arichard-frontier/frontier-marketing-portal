@@ -189,31 +189,6 @@ const fileBuffer =
     "base64"
   );
 
-if (Buffer.isBuffer(req.body)) {
-  fileBuffer = req.body;
-} else if (
-  req.rawBody &&
-  Buffer.isBuffer(req.rawBody)
-) {
-  fileBuffer = req.rawBody;
-} else if (
-  typeof req.rawBody === "string"
-) {
-  fileBuffer = Buffer.from(
-    req.rawBody,
-    "binary"
-  );
-} else if (
-  typeof req.body === "string"
-) {
-  fileBuffer = Buffer.from(
-    req.body,
-    "binary"
-  );
-} else {
-  fileBuffer = Buffer.alloc(0);
-}
-
 console.log(
   "UPLOAD FILE:",
   originalFileName
