@@ -15,10 +15,17 @@ export async function list(): Promise<MarketingRequest[]> {
 
   const data = await response.json();
 
-  console.log(
-    "SharePoint Fields",
-    data.value?.[0]?.fields
-  );
+ console.log(
+  "ALL SHAREPOINT REQUESTS:",
+  data.value
+);
+
+console.log(
+  "LATEST SHAREPOINT REQUEST:",
+  data.value?.[
+    data.value.length - 1
+  ]
+);
 
   return (data.value || [])
     .map((item: any) => {
@@ -110,8 +117,9 @@ proofFileName:
   "",
 
 proofUrl:
-  item.fields?.ProofUrl ||
+  item.fields?.ProofURL ||
   "",
+
 
 proofFeedback:
   item.fields?.ProofFeedback ||

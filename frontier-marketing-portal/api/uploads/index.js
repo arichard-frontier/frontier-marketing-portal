@@ -372,7 +372,7 @@ if (isProofCategory) {
     )
     .patch({
       Status:
-        "Waiting Approval",
+        "Proof Sent",
 
       ProofStatus:
         "Waiting Approval",
@@ -380,8 +380,8 @@ if (isProofCategory) {
       ProofFileName:
         uploadedFile.name,
 
-      ProofUrl:
-        uploadedFile.webUrl,
+   ProofURL:
+  uploadedFile.webUrl,
 
       ProofVersion:
         Number(proofVersion),
