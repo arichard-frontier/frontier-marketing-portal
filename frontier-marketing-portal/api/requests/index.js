@@ -385,6 +385,92 @@ body.details || {}
     if (method === "PATCH") {
   const body = req.body || {};
 
+  if (
+  body.action === "proof-review"
+) {
+  if (!body.id) {
+    context.res = {
+      status: 400,
+      body: {
+        error:
+          "Request ID is required.",
+      },
+    };
+
+    return;
+  }
+
+  if (
+    body.proofDecision !==
+      "Approved" &&
+    body.proofDecision !==
+      "Needs Edits"
+  ) {
+    context.res = {
+      status: 400,
+      body: {
+        error:
+          "A valid proof decision is required.",
+      },
+    };
+
+    return;
+  }
+
+  if (
+    body.proofDecision ===
+      "Needs Edits" &&
+    !String(
+      body.proofFeedback || ""
+    ).trim()
+  ) {
+    context.res = {
+      status: 400,
+      body: {
+        error:
+          "Comments are required when requesting edits.",
+      },
+    };
+
+    return;
+  }
+
+  const reviewedAt =
+    new Date().toISOString();
+
+  await graphClient
+    .api(
+      `/sites/${SITE_ID}/lists/${LIST_ID}/items/${body.id}/fields`
+    )
+    .patch({
+      ProofStatus:
+        body.proofDecision,
+
+      ProofFeedback:
+        body.proofFeedback || "",
+
+      ProofReviewedAt:
+        reviewedAt,
+
+      Status:
+        body.proofDecision ===
+        "Needs Edits"
+          ? "In Progress"
+          : "Completed",
+    });
+
+  context.res = {
+    status: 200,
+    body: {
+      success: true,
+      proofStatus:
+        body.proofDecision,
+    },
+  };
+
+  return;
+}
+
   console.log(
     "PATCH BODY:",
     JSON.stringify(body)
