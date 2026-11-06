@@ -78,8 +78,7 @@ const [submittingReview, setSubmittingReview] =
   supportsProof &&
   !cameFromDashboard &&
   request?.proofStatus ===
-    "Waiting Approval" &&
-  Boolean(request?.proofUrl);
+    "Waiting Approval";
 
     const uploadProof = async () => {
   if (!request) {
