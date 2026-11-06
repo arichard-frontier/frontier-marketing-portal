@@ -1,6 +1,7 @@
 import {
   FormEvent,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -47,6 +48,19 @@ export default function SocialMediaForm() {
 
 const [uploadError, setUploadError] =
   useState("");
+
+  const [isSubmitting, setIsSubmitting] =
+  useState(false);
+
+const submissionLock =
+  useRef(false);
+
+const createdRequestRef =
+  useRef<
+    Awaited<
+      ReturnType<typeof create>
+    > | null
+  >(null);
 
   const handlePhotoSelection = (
   e: React.ChangeEvent<HTMLInputElement>
@@ -121,6 +135,12 @@ const [uploadError, setUploadError] =
 ) => {
   e.preventDefault();
 
+  if (submissionLock.current) {
+    return;
+  }
+
+  submissionLock.current = true;
+  setIsSubmitting(true);
   setUploadError("");
 
   if (
@@ -135,7 +155,11 @@ const [uploadError, setUploadError] =
   }
 
   try {
-    const request = await create({
+    let request =
+  createdRequestRef.current;
+
+if (!request) {
+  request = await create({
       typeSlug: "social-media",
       typeTitle: "Social Media",
       workflow: "standard",
@@ -161,9 +185,13 @@ const [uploadError, setUploadError] =
         additionalNotes,
       },
 
-      submitterNote: "",
-      privateNote: "",
-    });
+       submitterNote: "",
+  privateNote: "",
+  });
+
+  createdRequestRef.current =
+    request;
+}
 
     if (
       photosAvailable === "Yes" &&
@@ -243,18 +271,21 @@ const [uploadError, setUploadError] =
     navigate(
       `/success/${request.requestNumber}`
     );
-  } catch (error) {
-    console.error(
-      "SOCIAL MEDIA SUBMISSION FAILED:",
-      error
-    );
+ } catch (error) {
+  console.error(
+    "SOCIAL MEDIA SUBMISSION FAILED:",
+    error
+  );
 
-    setUploadError(
-      error instanceof Error
-        ? error.message
-        : "The request or photo upload failed."
-    );
-  }
+  setUploadError(
+    error instanceof Error
+      ? error.message
+      : "The request or photo upload failed."
+  );
+} finally {
+  submissionLock.current = false;
+  setIsSubmitting(false);
+}
 };
 
   return (
@@ -568,12 +599,15 @@ required
 </label>
 
 <div className="actions">
-  <button
-    type="submit"
-    className="primary"
-  >
-    Submit Social Media Request
-  </button>
+ <button
+  type="submit"
+  className="primary"
+  disabled={isSubmitting}
+>
+  {isSubmitting
+    ? "Submitting Request..."
+    : "Submit Marketing Request"}
+</button>
 </div>
 </form>
 </div>
