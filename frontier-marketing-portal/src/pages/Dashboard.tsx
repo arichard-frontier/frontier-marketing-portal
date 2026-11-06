@@ -117,11 +117,23 @@ const setTab = (
   (request) => {
  const workflowMatch =
   tab === "completed"
-    ? [
-        "Completed",
-        "Rejected",
-        "Accepted",
-      ].includes(request.status)
+  ? (
+      request.typeTitle ===
+        "Frontier Apparel"
+        ? [
+            "Ordered",
+            "Rejected",
+          ].includes(
+            request.status
+          )
+        : [
+            "Completed",
+            "Rejected",
+            "Accepted",
+          ].includes(
+            request.status
+          )
+    )
 
     : tab === "moody"
     ? request.typeTitle === "Moody Center Request" &&
@@ -131,7 +143,14 @@ const setTab = (
       ].includes(request.status)
 
     : tab === "apparel"
-    ? request.typeTitle === "Frontier Apparel"
+? request.typeTitle ===
+    "Frontier Apparel" &&
+  ![
+    "Ordered",
+    "Rejected",
+  ].includes(
+    request.status
+  )
 
     : request.typeTitle !== "Moody Center Request" &&
       request.typeTitle !== "Frontier Apparel" &&
@@ -172,49 +191,71 @@ const setTab = (
 );
 
 const counts = useMemo(() => {
-  const activeRequests =
-    items.filter(
-      (request) =>
-        ![
-          "Completed",
-          "Rejected",
-          "Accepted",
-        ].includes(
-          request.status
-        )
-    );
+  const isApparelCompleted = (
+    request: MarketingRequest
+  ) =>
+    request.typeTitle ===
+      "Frontier Apparel" &&
+    [
+      "Ordered",
+      "Rejected",
+    ].includes(request.status);
+
+  const isOtherCompleted = (
+    request: MarketingRequest
+  ) =>
+    request.typeTitle !==
+      "Frontier Apparel" &&
+    [
+      "Completed",
+      "Rejected",
+      "Accepted",
+    ].includes(request.status);
+
+  const isCompleted = (
+    request: MarketingRequest
+  ) =>
+    isApparelCompleted(request) ||
+    isOtherCompleted(request);
 
   return {
     submitted:
-      activeRequests.filter(
+      items.filter(
         (request) =>
           request.status ===
-          "Submitted"
+            "Submitted" &&
+          !isCompleted(request)
       ).length,
 
     inProgress:
-      activeRequests.filter(
-        (request) =>
-          [
+      items.filter(
+        (request) => {
+          if (isCompleted(request)) {
+            return false;
+          }
+
+          if (
+            request.typeTitle ===
+            "Frontier Apparel"
+          ) {
+            return (
+              request.status ===
+              "On Order List"
+            );
+          }
+
+          return [
             "In Progress",
             "Proof Sent",
             "Waiting Approval",
             "Ordered",
-          ].includes(
-            request.status
-          )
+          ].includes(request.status);
+        }
       ).length,
 
     completed:
       items.filter(
-        (request) =>
-          [
-            "Completed",
-            "Rejected",
-            "Accepted",
-          ].includes(
-            request.status
-          )
+        isCompleted
       ).length,
   };
 }, [items]);

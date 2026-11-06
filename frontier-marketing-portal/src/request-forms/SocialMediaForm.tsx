@@ -36,9 +36,6 @@ export default function SocialMediaForm() {
   const [whatToPost, setWhatToPost] =
     useState("");
 
-  const [postGoal, setPostGoal] =
-    useState("");
-
   const [importantDetails, setImportantDetails] =
     useState("");
 
@@ -157,7 +154,6 @@ const [uploadError, setUploadError] =
         email,
         branch,
         whatToPost,
-        postGoal,
         importantDetails,
         photosAvailable,
         eventDate,
