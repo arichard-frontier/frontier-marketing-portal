@@ -366,32 +366,58 @@ if (isProofCategory) {
   const uploadedAt =
     new Date().toISOString();
 
+  console.log(
+    "UPDATING PROOF FIELDS:",
+    {
+      requestId,
+      fileName:
+        uploadedFile.name,
+      webUrl:
+        uploadedFile.webUrl,
+      proofVersion,
+      uploadedAt,
+    }
+  );
+
   await graphClient
     .api(
       `/sites/${SITE_ID}/lists/${REQUEST_LIST_ID}/items/${requestId}/fields`
     )
     .patch({
-  Status:
-    "Proof Sent",
+      Status:
+        "Proof Sent",
 
-  ProofStatus:
-    "Waiting Approval",
+      ProofStatus:
+        "Waiting Approval",
 
-  ProofFileName:
-    uploadedFile.name,
+      ProofFileName:
+        uploadedFile.name,
 
-  ProofURL:
-    uploadedFile.webUrl,
+      ProofVersion:
+        Number(proofVersion),
 
-  ProofVersion:
-    Number(proofVersion),
+      ProofUploadedAt:
+        uploadedAt,
 
-  ProofUploadedAt:
-    uploadedAt,
+      ProofFeedback:
+        "",
+    });
 
-  ProofFeedback:
-    "",
-});
+  try {
+    await graphClient
+      .api(
+        `/sites/${SITE_ID}/lists/${REQUEST_LIST_ID}/items/${requestId}/fields`
+      )
+      .patch({
+        ProofURL:
+          uploadedFile.webUrl,
+      });
+  } catch (urlError) {
+    console.error(
+      "PROOF URL UPDATE FAILED:",
+      urlError
+    );
+  }
 
   console.log(
     "PROOF SENT FOR APPROVAL:",
