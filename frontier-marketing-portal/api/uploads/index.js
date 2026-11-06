@@ -371,30 +371,27 @@ if (isProofCategory) {
       `/sites/${SITE_ID}/lists/${REQUEST_LIST_ID}/items/${requestId}/fields`
     )
     .patch({
-      Status:
-        "Proof Sent",
+  Status:
+    "Proof Sent",
 
-      ProofStatus:
-        "Waiting Approval",
+  ProofStatus:
+    "Waiting Approval",
 
-      ProofFileName:
-        uploadedFile.name,
+  ProofFileName:
+    uploadedFile.name,
 
-   ProofURL:
-  uploadedFile.webUrl,
+  ProofURL:
+    uploadedFile.webUrl,
 
-      ProofVersion:
-        Number(proofVersion),
+  ProofVersion:
+    Number(proofVersion),
 
-      ProofUploadedAt:
-        uploadedAt,
+  ProofUploadedAt:
+    uploadedAt,
 
-      ProofFeedback:
-        "",
-
-      ProofReviewedAt:
-        null,
-    });
+  ProofFeedback:
+    "",
+});
 
   console.log(
     "PROOF SENT FOR APPROVAL:",
