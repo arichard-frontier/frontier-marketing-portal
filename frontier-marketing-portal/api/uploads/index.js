@@ -441,52 +441,94 @@ if (isProofCategory) {
     urlError.body
   );
 }
-const historyItem =
-  await graphClient
-  .api(
-    `/sites/${SITE_ID}/lists/${PROOF_HISTORY_LIST_ID}/items`
-  )
-  .post({
-    fields: {
-      Title:
-        `${safeRequestNumber} Proof ${proofVersion}`,
-
-      RequestId:
-        String(requestId),
-
-      RequestNumber:
+try {
+  console.log(
+    "CREATING PROOF HISTORY:",
+    {
+      requestId,
+      requestNumber:
         safeRequestNumber,
-
-      ProofVersion:
-        Number(proofVersion),
-
-      ProofFileName:
+      proofVersion,
+      proofFileName:
         uploadedFile.name,
+      uploadedAt,
+    }
+  );
 
-      ProofURL:
-        uploadedFile.webUrl || "",
+  const historyItem =
+    await graphClient
+      .api(
+        `/sites/${SITE_ID}/lists/${PROOF_HISTORY_LIST_ID}/items`
+      )
+      .post({
+        fields: {
+          Title:
+            `${safeRequestNumber} Proof ${proofVersion}`,
 
-      ReviewStatus:
-        "Waiting Approval",
+          RequestId:
+            String(requestId),
 
-      ReviewFeedback:
-        "",
+          RequestNumber:
+            safeRequestNumber,
 
-      UploadedAt:
-        uploadedAt,
-    },
-  });
+          ProofVersion:
+            Number(proofVersion),
+
+          ProofFileName:
+            uploadedFile.name,
+
+          ReviewStatus:
+            "Waiting Approval",
+
+          ReviewFeedback:
+            "",
+
+          UploadedAt:
+            uploadedAt,
+        },
+      });
 
   await graphClient
-  .api(
-    `/sites/${SITE_ID}/lists/${REQUEST_LIST_ID}/items/${requestId}/fields`
-  )
-  .patch({
-    ProofHistoryItemId:
-      String(
-        historyItem.id
-      ),
-  });
+    .api(
+      `/sites/${SITE_ID}/lists/${REQUEST_LIST_ID}/items/${requestId}/fields`
+    )
+    .patch({
+      ProofHistoryItemId:
+        String(
+          historyItem.id
+        ),
+    });
+
+  console.log(
+    "PROOF HISTORY CREATED:",
+    historyItem.id
+  );
+} catch (historyError) {
+  console.error(
+    "PROOF HISTORY CREATE FAILED:",
+    historyError
+  );
+
+  console.error(
+    "PROOF HISTORY ERROR MESSAGE:",
+    historyError.message
+  );
+
+  console.error(
+    "PROOF HISTORY ERROR CODE:",
+    historyError.code
+  );
+
+  console.error(
+    "PROOF HISTORY ERROR STATUS:",
+    historyError.statusCode
+  );
+
+  console.error(
+    "PROOF HISTORY ERROR BODY:",
+    historyError.body
+  );
+}
 
 console.log(
   "PROOF SENT FOR APPROVAL:",
