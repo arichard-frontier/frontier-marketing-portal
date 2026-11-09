@@ -25,7 +25,7 @@ const standard: Status[] = [
   "Submitted",
   "In Progress",
   "Proof Sent",
-  "Waiting Approval",
+  "Approved",
   "Ordered",
   "Completed",
   "Rejected",

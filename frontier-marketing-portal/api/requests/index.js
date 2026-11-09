@@ -34,46 +34,303 @@ module.exports = async function (context, req) {
 
     const method = (req.method || "").toUpperCase();
 
-   if (method === "GET") {
-  let allItems = [];
-
-  let response =
-    await graphClient
-      .api(
-        `/sites/${SITE_ID}/lists/${LIST_ID}/items`
-      )
-      .expand("fields")
-      .top(200)
-      .get();
-
-  allItems.push(
-    ...(response.value || [])
-  );
-
-  while (
-    response["@odata.nextLink"]
-  ) {
-    response =
-      await graphClient
+    if (method === "GET") {
+      const items = await graphClient
         .api(
-          response["@odata.nextLink"]
+          `/sites/${SITE_ID}/lists/${LIST_ID}/items?expand=fields`
         )
         .get();
 
-    allItems.push(
-      ...(response.value || [])
-    );
-  }
+        // Notify Marketing of the new request.
+try {
+  const requestNumber =
+    `MKT-${new Date().getFullYear()}-${String(
+      item.id
+    ).padStart(4, "0")}`;
 
-  context.res = {
-    status: 200,
-    body: {
-      value: allItems,
-    },
-  };
+  const requestDetails =
+    body.details || {};
 
-  return;
+  const escapeHtml = (value) =>
+    String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  const formatLabel = (key) =>
+    key
+      .replace(/([A-Z])/g, " $1")
+      .replace(/^./, (str) =>
+        str.toUpperCase()
+      );
+
+  const detailRows =
+    Object.entries(requestDetails)
+      .filter(
+        ([key, value]) =>
+          value !== "" &&
+          value !== null &&
+          value !== undefined &&
+          ![
+            "fullName",
+            "email",
+            "branch",
+          ].includes(key)
+      )
+      .map(
+        ([key, value]) => `
+          <tr>
+            <td
+              style="
+                padding: 6px 16px 6px 0;
+                font-weight: 700;
+                vertical-align: top;
+              "
+            >
+              ${escapeHtml(
+                formatLabel(key)
+              )}:
+            </td>
+
+            <td
+              style="
+                padding: 6px 0;
+                vertical-align: top;
+              "
+            >
+              ${escapeHtml(
+                Array.isArray(value)
+                  ? value.join(", ")
+                  : value
+              )}
+            </td>
+          </tr>
+        `
+      )
+      .join("");
+
+  const emailBody = `
+    <div
+      style="
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 14px;
+        color: #222222;
+        line-height: 1.55;
+        max-width: 700px;
+      "
+    >
+      <h2
+        style="
+          color: #1f3636;
+          margin-bottom: 8px;
+        "
+      >
+        New Marketing Request
+      </h2>
+
+      <div
+        style="
+          background: #f5f3ee;
+          border-left: 4px solid #a51e2d;
+          padding: 14px 18px;
+          margin: 18px 0 24px 0;
+        "
+      >
+        <strong>
+          Request:
+          ${escapeHtml(requestNumber)}
+        </strong>
+
+        <br />
+
+        <strong>
+          Type:
+          ${escapeHtml(
+            body.typeTitle ||
+              "Marketing Request"
+          )}
+        </strong>
+
+        <br />
+
+        <strong>
+          Status: Submitted
+        </strong>
+      </div>
+
+      <h3
+        style="
+          color: #1f3636;
+          margin-bottom: 8px;
+        "
+      >
+        Request Details
+      </h3>
+
+      <table
+        role="presentation"
+        cellpadding="0"
+        cellspacing="0"
+        style="
+          border-collapse: collapse;
+          margin-bottom: 20px;
+        "
+      >
+        <tr>
+          <td
+            style="
+              padding: 6px 16px 6px 0;
+              font-weight: 700;
+            "
+          >
+            Requester:
+          </td>
+
+          <td style="padding: 6px 0;">
+            ${escapeHtml(
+              body.requesterName || ""
+            )}
+          </td>
+        </tr>
+
+        <tr>
+          <td
+            style="
+              padding: 6px 16px 6px 0;
+              font-weight: 700;
+            "
+          >
+            Email:
+          </td>
+
+          <td style="padding: 6px 0;">
+            ${escapeHtml(
+              body.requesterEmail || ""
+            )}
+          </td>
+        </tr>
+
+        <tr>
+          <td
+            style="
+              padding: 6px 16px 6px 0;
+              font-weight: 700;
+            "
+          >
+            Branch:
+          </td>
+
+          <td style="padding: 6px 0;">
+            ${escapeHtml(
+              body.branchDepartment || ""
+            )}
+          </td>
+        </tr>
+
+        ${
+          body.dueDate
+            ? `
+              <tr>
+                <td
+                  style="
+                    padding: 6px 16px 6px 0;
+                    font-weight: 700;
+                  "
+                >
+                  Due Date:
+                </td>
+
+                <td style="padding: 6px 0;">
+                  ${escapeHtml(
+                    body.dueDate
+                  )}
+                </td>
+              </tr>
+            `
+            : ""
+        }
+
+        ${detailRows}
+      </table>
+
+      <p>
+        Open the
+        <strong>
+          Frontier Marketing Portal
+        </strong>
+        to review and manage this request.
+      </p>
+
+      <p>
+        Frontier Marketing Portal
+      </p>
+    </div>
+  `;
+
+  await graphClient
+    .api(
+      `/users/${MARKETING_EMAIL}/sendMail`
+    )
+    .post({
+      message: {
+        subject:
+          `New Marketing Request ${requestNumber} - ${body.typeTitle || "Marketing Request"}`,
+
+        body: {
+          contentType: "HTML",
+          content: emailBody,
+        },
+
+        toRecipients: [
+          {
+            emailAddress: {
+              address:
+                MARKETING_EMAIL,
+            },
+          },
+        ],
+      },
+
+      saveToSentItems: true,
+    });
+
+  console.log(
+    "NEW REQUEST EMAIL SENT:",
+    requestNumber
+  );
+} catch (emailError) {
+  console.error(
+    "NEW REQUEST EMAIL FAILED:",
+    emailError
+  );
+
+  console.error(
+    "NEW REQUEST EMAIL MESSAGE:",
+    emailError.message
+  );
+
+  console.error(
+    "NEW REQUEST EMAIL CODE:",
+    emailError.code
+  );
+
+  console.error(
+    "NEW REQUEST EMAIL STATUS:",
+    emailError.statusCode
+  );
 }
+
+      context.res = {
+        status: 200,
+        body: items,
+      };
+      
+
+      return;
+    }
+
     if (method === "POST") {
       const body = req.body || {};
 
@@ -196,10 +453,10 @@ body.details || {}
         reviewedAt,
 
       Status:
-        body.proofDecision ===
-        "Needs Edits"
-          ? "In Progress"
-          : "Completed",
+  body.proofDecision ===
+  "Needs Edits"
+    ? "In Progress"
+    : "Approved",
     });
 
   context.res = {
