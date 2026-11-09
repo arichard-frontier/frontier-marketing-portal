@@ -404,20 +404,40 @@ if (isProofCategory) {
     });
 
   try {
+  const proofUrl =
+    uploadedFile.webUrl || "";
+
+  console.log(
+    "PROOF URL:",
+    proofUrl
+  );
+
+  if (proofUrl) {
     await graphClient
       .api(
         `/sites/${SITE_ID}/lists/${REQUEST_LIST_ID}/items/${requestId}/fields`
       )
       .patch({
         ProofURL:
-          uploadedFile.webUrl,
+          proofUrl,
       });
-  } catch (urlError) {
-    console.error(
-      "PROOF URL UPDATE FAILED:",
-      urlError
-    );
   }
+} catch (urlError) {
+  console.error(
+    "PROOF URL UPDATE FAILED:",
+    urlError
+  );
+
+  console.error(
+    "PROOF URL ERROR MESSAGE:",
+    urlError.message
+  );
+
+  console.error(
+    "PROOF URL ERROR BODY:",
+    urlError.body
+  );
+}
 
   console.log(
     "PROOF SENT FOR APPROVAL:",

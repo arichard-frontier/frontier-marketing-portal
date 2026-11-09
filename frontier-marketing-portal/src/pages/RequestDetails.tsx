@@ -209,6 +209,10 @@ const [submittingReview, setSubmittingReview] =
         result.error ||
           "Unable to upload proof."
       );
+      console.log(
+  "UPLOADED PROOF:",
+  result
+);
     }
 
     const requests =
