@@ -245,11 +245,11 @@ const counts = useMemo(() => {
           }
 
           return [
-            "In Progress",
-            "Proof Sent",
-            "Waiting Approval",
-            "Ordered",
-          ].includes(request.status);
+  "In Progress",
+  "Proof Sent",
+  "Approved",
+  "Ordered",
+].includes(request.status);
         }
       ).length,
 

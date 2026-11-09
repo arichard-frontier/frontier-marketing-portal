@@ -10,10 +10,33 @@ const seed:MarketingRequest[]=[
 
 export async function list(): Promise<MarketingRequest[]> {
   const response = await fetch(
-    "/api/requests"
+  "/api/requests"
+);
+
+const data = await response.json();
+
+if (!response.ok) {
+  console.error(
+    "REQUEST LIST FAILED:",
+    data
   );
 
-  const data = await response.json();
+  throw new Error(
+    data.error ||
+      "Unable to load marketing requests."
+  );
+}
+
+if (!Array.isArray(data.value)) {
+  console.error(
+    "INVALID REQUEST LIST RESPONSE:",
+    data
+  );
+
+  throw new Error(
+    "The request list returned an invalid response."
+  );
+}
 
  console.log(
   "ALL SHAREPOINT REQUESTS:",
