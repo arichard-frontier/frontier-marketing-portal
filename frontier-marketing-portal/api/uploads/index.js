@@ -19,6 +19,9 @@ const UPLOAD_DRIVE_ID =
 const REQUEST_LIST_ID =
   "93129ad2-c170-4f4e-b79c-d989748a8b13";
 
+  const PROOF_HISTORY_LIST_ID =
+  "9fdafa3c-0186-4055-bf8e-f6e50426129e";
+
 const CATEGORY_FOLDERS = {
   "social-media":
     "01GMXASG2SSOWEANPWIZG3HAYYE7RFXP3R",
@@ -438,12 +441,58 @@ if (isProofCategory) {
     urlError.body
   );
 }
+const historyItem =
+  await graphClient
+  .api(
+    `/sites/${SITE_ID}/lists/${PROOF_HISTORY_LIST_ID}/items`
+  )
+  .post({
+    fields: {
+      Title:
+        `${safeRequestNumber} Proof ${proofVersion}`,
 
-  console.log(
-    "PROOF SENT FOR APPROVAL:",
-    requestId,
-    uploadedFile.name
-  );
+      RequestId:
+        String(requestId),
+
+      RequestNumber:
+        safeRequestNumber,
+
+      ProofVersion:
+        Number(proofVersion),
+
+      ProofFileName:
+        uploadedFile.name,
+
+      ProofURL:
+        uploadedFile.webUrl || "",
+
+      ReviewStatus:
+        "Waiting Approval",
+
+      ReviewFeedback:
+        "",
+
+      UploadedAt:
+        uploadedAt,
+    },
+  });
+
+  await graphClient
+  .api(
+    `/sites/${SITE_ID}/lists/${REQUEST_LIST_ID}/items/${requestId}/fields`
+  )
+  .patch({
+    ProofHistoryItemId:
+      String(
+        historyItem.id
+      ),
+  });
+
+console.log(
+  "PROOF SENT FOR APPROVAL:",
+  requestId,
+  uploadedFile.name
+);
 }
 
     context.res = {

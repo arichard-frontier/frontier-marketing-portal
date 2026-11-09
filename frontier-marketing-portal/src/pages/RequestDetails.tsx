@@ -16,6 +16,7 @@ import { list } from "../services/store";
 
 import type {
   MarketingRequest,
+  ProofHistoryItem,
 } from "../types";
 
 import { formatDate } from "../utils/formatDate";
@@ -35,6 +36,9 @@ export default function RequestDetails() {
 
   const [request, setRequest] =
     useState<MarketingRequest | null>(null);
+
+    const [proofHistory, setProofHistory] =
+  useState<ProofHistoryItem[]>([]);
 
   const [loading, setLoading] =
     useState(true);
@@ -205,15 +209,17 @@ const [submittingReview, setSubmittingReview] =
       await response.json();
 
     if (!response.ok) {
-      throw new Error(
-        result.error ||
-          "Unable to upload proof."
-      );
-      console.log(
+  throw new Error(
+    result.error ||
+      "Unable to upload proof."
+  );
+}
+
+console.log(
   "UPLOADED PROOF:",
   result
 );
-    }
+
 
     const requests =
       await list();
@@ -225,13 +231,17 @@ const [submittingReview, setSubmittingReview] =
           request.id
       );
 
-    if (refreshed) {
-      setRequest(
-        refreshed
-      );
-    }
+   if (refreshed) {
+  setRequest(
+    refreshed
+  );
+}
 
-    setProofFile(null);
+await loadProofHistory(
+  request.id
+);
+
+setProofFile(null);
 
     window.dispatchEvent(
       new Event(
@@ -329,13 +339,16 @@ const submitProofReview = async () => {
           item.id === request.id
       );
 
-    if (refreshed) {
-      setRequest(refreshed);
-    }
+  if (refreshed) {
+  setRequest(refreshed);
+}
 
-    setProofDecision("");
-    setProofFeedback("");
+await loadProofHistory(
+  request.id
+);
 
+setProofDecision("");
+setProofFeedback("");
     window.dispatchEvent(
       new Event(
         "requests-changed"
@@ -369,6 +382,104 @@ const submitProofReview = async () => {
   }
 };
 
+const loadProofHistory = async (
+  requestId: string
+) => {
+  try {
+    const response =
+      await fetch(
+        `/api/requests?proofHistoryFor=${encodeURIComponent(
+          requestId
+        )}`
+      );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          "Unable to load proof history."
+      );
+    }
+
+    const history:
+      ProofHistoryItem[] =
+      (data.value || []).map(
+        (item: any) => ({
+          id:
+            String(item.id),
+
+          requestId:
+            item.fields?.RequestId ||
+            "",
+
+          requestNumber:
+            item.fields?.RequestNumber ||
+            "",
+
+          proofVersion:
+            Number(
+              item.fields?.ProofVersion ||
+              0
+            ),
+
+          proofFileName:
+            item.fields?.ProofFileName ||
+            "",
+
+          proofUrl:
+  item.fields?.ProofURL ||
+  (
+    item.fields?.ProofFileName
+      ? `https://frontierbankoftexas.sharepoint.com/Marketing%20Request%20Uploads/${
+          request?.typeTitle ===
+          "Marketing Materials"
+            ? "Marketing%20Materials"
+            : request?.typeTitle ===
+              "Business Cards"
+            ? "Business%20Cards"
+            : "Advertisements"
+        }/${request?.requestNumber}/${encodeURIComponent(
+          item.fields.ProofFileName
+        )}?web=1`
+      : ""
+  ),
+  
+
+          reviewStatus:
+            item.fields?.ReviewStatus ||
+            "Waiting Approval",
+
+          reviewFeedback:
+            item.fields?.ReviewFeedback ||
+            "",
+
+          uploadedAt:
+            item.fields?.UploadedAt ||
+            "",
+
+          reviewedAt:
+            item.fields?.ReviewedAt ||
+            "",
+
+          reviewedBy:
+            item.fields?.ReviewedBy ||
+            "",
+        })
+      );
+
+    setProofHistory(history);
+  } catch (error) {
+    console.error(
+      "PROOF HISTORY LOAD FAILED:",
+      error
+    );
+
+    setProofHistory([]);
+  }
+};
+
   useEffect(() => {
     const loadRequest = async () => {
       const requests = await list();
@@ -379,9 +490,14 @@ const submitProofReview = async () => {
   ) || null;
 
 setRequest(found);
-
+if (found) {
+  await loadProofHistory(
+    found.id
+  );
+}
 if (found) {
   localStorage.setItem(
+    
     `request-seen-${found.id}`,
     found.updatedAt ||
       found.submittedAt
@@ -820,13 +936,150 @@ setLoading(false);
   </>
 )}
 
+{supportsProof &&
+  proofHistory.length > 0 && (
+    <>
+      <hr />
+
+      <h2>
+        Proof History
+      </h2>
+
+      <p>
+        Previous proofs, review
+        decisions, and requester
+        feedback for this request.
+      </p>
+
+      <div
+        style={{
+          display: "grid",
+          gap: "14px",
+          marginBottom: "24px",
+        }}
+      >
+        {proofHistory.map(
+          (proof) => (
+            <div
+              key={proof.id}
+              style={{
+                padding: "16px",
+                border:
+                  "1px solid #d6d0c4",
+                borderRadius: "8px",
+                background:
+                  "#f8f7f3",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent:
+                    "space-between",
+                  gap: "12px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <strong>
+                  Proof{" "}
+                  {proof.proofVersion}
+                </strong>
+
+                <strong>
+                  {proof.reviewStatus}
+                </strong>
+              </div>
+
+              {proof.proofFileName && (
+                <p>
+                  <strong>
+                    File:
+                  </strong>{" "}
+                  {proof.proofFileName}
+                </p>
+              )}
+
+              {proof.uploadedAt && (
+                <p>
+                  <strong>
+                    Uploaded:
+                  </strong>{" "}
+                  {new Date(
+                    proof.uploadedAt
+                  ).toLocaleString()}
+                </p>
+              )}
+
+              {proof.proofUrl && (
+                <p>
+                  <a
+                    href={
+                      proof.proofUrl
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View Proof{" "}
+                    {proof.proofVersion}
+                  </a>
+                </p>
+              )}
+
+              {proof.reviewFeedback && (
+                <div
+                  style={{
+                    marginTop: "12px",
+                    padding: "12px",
+                    background:
+                      "#fff8e1",
+                    borderRadius:
+                      "6px",
+                  }}
+                >
+                  <strong>
+                    Requester Feedback
+                  </strong>
+
+                  <p
+                    style={{
+                      marginBottom: 0,
+                    }}
+                  >
+                    {
+                      proof.reviewFeedback
+                    }
+                  </p>
+                </div>
+              )}
+
+              {proof.reviewedAt && (
+                <p
+                  style={{
+                    marginTop: "12px",
+                    marginBottom: 0,
+                    fontSize: "13px",
+                  }}
+                >
+                  <strong>
+                    Reviewed:
+                  </strong>{" "}
+                  {new Date(
+                    proof.reviewedAt
+                  ).toLocaleString()}
+                </p>
+              )}
+            </div>
+          )
+        )}
+      </div>
+    </>
+  )}
+
 <hr />
 
 <h2>Form Details</h2>
 
-        <hr />
-
-        <h2>Form Details</h2>
+      
 
         <div className="detailsGrid">
           {Object.entries(

@@ -58,3 +58,27 @@ proofVersion?: number;
 proofUploadedAt?: string;
 proofReviewedAt?: string;
 }
+
+export interface ProofHistoryItem {
+  id: string;
+
+  requestId: string;
+
+  requestNumber: string;
+
+  proofVersion: number;
+
+  proofFileName: string;
+
+  proofUrl: string;
+
+  reviewStatus: string;
+
+  reviewFeedback: string;
+
+  uploadedAt: string;
+
+  reviewedAt: string;
+
+  reviewedBy: string;
+}

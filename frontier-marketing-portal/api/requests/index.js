@@ -7,6 +7,10 @@ const SITE_ID =
 
 const LIST_ID =
   "93129ad2-c170-4f4e-b79c-d989748a8b13";
+
+  const PROOF_HISTORY_LIST_ID =
+  "9fdafa3c-0186-4055-bf8e-f6e50426129e";
+
    const MARKETING_EMAIL =
   "marketing@frontierbankoftexas.bank";
 
@@ -35,6 +39,84 @@ module.exports = async function (context, req) {
     const method = (req.method || "").toUpperCase();
 
    if (method === "GET") {
+    const proofHistoryFor =
+  req.query?.proofHistoryFor ||
+  "";
+
+if (proofHistoryFor) {
+  const allHistoryItems = [];
+
+  let historyResponse =
+    await graphClient
+      .api(
+        `/sites/${SITE_ID}/lists/${PROOF_HISTORY_LIST_ID}/items`
+      )
+      .expand("fields")
+      .top(200)
+      .get();
+
+  allHistoryItems.push(
+    ...(historyResponse.value || [])
+  );
+
+  while (
+    historyResponse[
+      "@odata.nextLink"
+    ]
+  ) {
+    const nextPath =
+      historyResponse[
+        "@odata.nextLink"
+      ].replace(
+        "https://graph.microsoft.com/v1.0",
+        ""
+      );
+
+    historyResponse =
+      await graphClient
+        .api(nextPath)
+        .get();
+
+    allHistoryItems.push(
+      ...(
+        historyResponse.value ||
+        []
+      )
+    );
+  }
+
+  const matchingHistory =
+    allHistoryItems
+      .filter(
+        (item) =>
+          String(
+            item.fields?.RequestId ||
+            ""
+          ) ===
+          String(proofHistoryFor)
+      )
+      .sort(
+        (a, b) =>
+          Number(
+            a.fields?.ProofVersion ||
+            0
+          ) -
+          Number(
+            b.fields?.ProofVersion ||
+            0
+          )
+      );
+
+  context.res = {
+    status: 200,
+    body: {
+      value:
+        matchingHistory,
+    },
+  };
+
+  return;
+}
   const allItems = [];
 
   let response =
@@ -185,39 +267,85 @@ body.details || {}
   }
 
   const reviewedAt =
-    new Date().toISOString();
+  new Date().toISOString();
 
+const reviewRequest =
   await graphClient
     .api(
-      `/sites/${SITE_ID}/lists/${LIST_ID}/items/${body.id}/fields`
+      `/sites/${SITE_ID}/lists/${LIST_ID}/items/${body.id}?expand=fields`
+    )
+    .get();
+
+const proofHistoryItemId =
+  reviewRequest.fields
+    ?.ProofHistoryItemId ||
+  "";
+
+await graphClient
+  .api(
+    `/sites/${SITE_ID}/lists/${LIST_ID}/items/${body.id}/fields`
+  )
+  .patch({
+    ProofStatus:
+      body.proofDecision,
+
+    ProofFeedback:
+      body.proofFeedback || "",
+
+    ProofReviewedAt:
+      reviewedAt,
+
+    Status:
+      body.proofDecision ===
+      "Needs Edits"
+        ? "In Progress"
+        : "Approved",
+  });
+
+if (proofHistoryItemId) {
+  await graphClient
+    .api(
+      `/sites/${SITE_ID}/lists/${PROOF_HISTORY_LIST_ID}/items/${proofHistoryItemId}/fields`
     )
     .patch({
-      ProofStatus:
+      ReviewStatus:
         body.proofDecision,
 
-      ProofFeedback:
+      ReviewFeedback:
         body.proofFeedback || "",
 
-      ProofReviewedAt:
+      ReviewedAt:
         reviewedAt,
 
-      Status:
-  body.proofDecision ===
-  "Needs Edits"
-    ? "In Progress"
-    : "Approved",
+      ReviewedBy:
+        reviewRequest.fields
+          ?.SubmittedEmail ||
+        "",
     });
 
-  context.res = {
-    status: 200,
-    body: {
-      success: true,
-      proofStatus:
-        body.proofDecision,
-    },
-  };
+  console.log(
+    "PROOF HISTORY UPDATED:",
+    proofHistoryItemId,
+    body.proofDecision
+  );
+} else {
+  console.warn(
+    "NO PROOF HISTORY ITEM ID:",
+    body.id
+  );
+}
 
-  return;
+context.res = {
+  status: 200,
+  body: {
+    success: true,
+
+    proofStatus:
+      body.proofDecision,
+  },
+};
+
+return;
 }
 
   console.log(
