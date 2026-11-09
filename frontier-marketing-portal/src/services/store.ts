@@ -118,7 +118,23 @@ proofFileName:
 
 proofUrl:
   item.fields?.ProofURL ||
-  "",
+  (
+    item.fields?.ProofFileName
+      ? `https://frontierbankoftexas.sharepoint.com/Marketing%20Request%20Uploads/${
+          item.fields?.RequestType ===
+          "Marketing Materials"
+            ? "Marketing%20Materials"
+            : item.fields?.RequestType ===
+              "Business Cards"
+            ? "Business%20Cards"
+            : "Advertisements"
+        }/MKT-${new Date().getFullYear()}-${String(
+          item.id
+        ).padStart(4, "0")}/${encodeURIComponent(
+          item.fields.ProofFileName
+        )}?web=1`
+      : ""
+  ),
 
 
 proofFeedback:
